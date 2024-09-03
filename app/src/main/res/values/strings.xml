@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Threddit</string>
+    <string name="log_in_title">Log in to Threddit</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="sign_in_with_google">Sign In with Google</string>
+    <string name="create_your_account">Create your Account</string>
+    <string name="continue_with_google">Continue with Google</string>
+</resources>
