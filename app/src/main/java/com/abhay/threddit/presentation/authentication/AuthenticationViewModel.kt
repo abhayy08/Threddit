@@ -11,9 +11,12 @@ import com.abhay.threddit.presentation.SIGN_UP_SCREEN
 import com.abhay.threddit.presentation.THREDDIT_MAIN_SCREEN
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AuthenticationViewModel(
+@HiltViewModel
+class AuthenticationViewModel @Inject constructor(
     private val accountService: AccountService
 ) : ViewModel() {
 

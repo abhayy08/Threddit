@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.abhay.threddit.R
 import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
 import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
@@ -39,7 +40,7 @@ fun SignUpScreen(
     openAndPopUp: (String, String) -> Unit = { _, _ -> }
 ) {
 
-    val viewModel = AuthenticationViewModel(AccountServiceImpl())
+    val viewModel = hiltViewModel<AuthenticationViewModel>()
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {

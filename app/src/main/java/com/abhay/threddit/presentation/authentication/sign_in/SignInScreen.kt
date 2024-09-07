@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.abhay.threddit.R
 import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
 import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
@@ -62,7 +63,7 @@ fun SignInScreen(
     openAndPopUp: (String, String) -> Unit = { _,_ ->}
 ) {
 
-    val viewModel = AuthenticationViewModel(AccountServiceImpl())
+    val viewModel = hiltViewModel<AuthenticationViewModel>()
 
     var passwordVisible by remember {
         mutableStateOf(false)

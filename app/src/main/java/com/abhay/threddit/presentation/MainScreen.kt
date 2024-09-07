@@ -14,6 +14,7 @@ import androidx.compose.runtime.ControlledComposition
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.size.Scale
 import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
 import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
@@ -25,7 +26,7 @@ import com.google.firebase.auth.auth
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, openScreen: (String) -> Unit) {
 
-    val viewmodel = AuthenticationViewModel(AccountServiceImpl())
+    val viewmodel = hiltViewModel<AuthenticationViewModel>()
 
     Scaffold { _ ->
         Column(
@@ -34,10 +35,10 @@ fun MainScreen(modifier: Modifier = Modifier, openScreen: (String) -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            val asd = Firebase.auth.currentUser
-            val userId = asd?.uid ?: "NoUser"
-
-            Text(text = userId)
+//            val asd = Firebase.auth.currentUser
+//            val userId = asd?.uid ?: "NoUser"
+//
+//            Text(text = userId)
 
             Button(onClick = { openScreen(SIGN_IN_SCREEN) }) {
                 Text(text = "SIGN IN")
