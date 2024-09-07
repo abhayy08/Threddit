@@ -9,6 +9,7 @@ import com.abhay.threddit.domain.AccountService
 import com.abhay.threddit.presentation.SIGN_IN_SCREEN
 import com.abhay.threddit.presentation.SIGN_UP_SCREEN
 import com.abhay.threddit.presentation.THREDDIT_MAIN_SCREEN
+import com.abhay.threddit.presentation.navigation.changes.Graphs
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +29,7 @@ class AuthenticationViewModel @Inject constructor(
                     val googleIdTokenCredential =
                         GoogleIdTokenCredential.createFrom(credential.data)
                     accountService.signInWithGoogle(googleIdTokenCredential.idToken)
-                    openAndPopUp(THREDDIT_MAIN_SCREEN, SIGN_IN_SCREEN)
+                    openAndPopUp(Graphs.HomeGraph.route, Graphs.AuthGraph.route)
                 } else {
                     Log.d("auth", "Unexpected Credential")// UNEXPECTED CREDENTIAL
                 }
@@ -46,7 +47,7 @@ class AuthenticationViewModel @Inject constructor(
                     val googleIdTokenCredential =
                         GoogleIdTokenCredential.createFrom(credential.data)
                     accountService.linkAccountWithGoogle(googleIdTokenCredential.idToken)
-                    openAndPopUp(THREDDIT_MAIN_SCREEN, SIGN_UP_SCREEN)
+                    openAndPopUp(Graphs.HomeGraph.route, Graphs.AuthGraph.route)
                 } else {
                     Log.d("auth", "Unexpected Credential")// UNEXPECTED CREDENTIAL
                 }

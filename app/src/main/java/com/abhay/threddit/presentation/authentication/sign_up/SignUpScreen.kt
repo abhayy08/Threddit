@@ -37,10 +37,10 @@ import com.abhay.threddit.ui.theme.ThredditTheme
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
+    viewModel: AuthenticationViewModel,
     openAndPopUp: (String, String) -> Unit = { _, _ -> }
 ) {
 
-    val viewModel = hiltViewModel<AuthenticationViewModel>()
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -90,6 +90,6 @@ fun SignUpScreen(
 @Composable
 private fun SignUpPrev() {
     ThredditTheme {
-        SignUpScreen()
+//        SignUpScreen()
     }
 }
