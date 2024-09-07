@@ -38,7 +38,7 @@ import com.abhay.threddit.ui.theme.ThredditTheme
 fun SignUpScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel,
-    openAndPopUp: (String, String) -> Unit = { _, _ -> }
+    openAndPopUp: (Any, Any) -> Unit = { _, _ -> }
 ) {
 
     Scaffold(

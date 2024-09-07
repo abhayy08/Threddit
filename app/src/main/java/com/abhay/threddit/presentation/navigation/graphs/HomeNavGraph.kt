@@ -6,15 +6,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.abhay.threddit.utils.navigateAndPopUp
 import com.abhay.threddit.presentation.MainScreen
-import com.abhay.threddit.presentation.navigation.changes.Graphs
+import com.abhay.threddit.presentation.navigation.routes.Graphs
 
 
 fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
-    navigation(
-        startDestination = Graphs.HomeGraph.HomeScreen.route,
-        route = Graphs.HomeGraph.route
+    navigation<Graphs.HomeGraph>(
+        startDestination = Graphs.HomeGraph.HomeScreen
     ) {
-        composable(Graphs.HomeGraph.HomeScreen.route) {
+        composable<Graphs.HomeGraph.HomeScreen> {
             MainScreen(
                 openAndPopUp = { route, popUp ->
                     navController.navigateAndPopUp(route, popUp)

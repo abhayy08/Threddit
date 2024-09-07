@@ -8,15 +8,15 @@ import com.abhay.threddit.utils.navigateAndPopUp
 import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
 import com.abhay.threddit.presentation.authentication.sign_in.LogInScreen
 import com.abhay.threddit.presentation.authentication.sign_up.SignUpScreen
-import com.abhay.threddit.presentation.navigation.changes.Graphs
+import com.abhay.threddit.presentation.navigation.routes.Graphs
 
 
 fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
-    navigation(
-        startDestination = Graphs.AuthGraph.LogInScreen.route,
-        route = Graphs.AuthGraph.route
+
+    navigation<Graphs.AuthGraph>(
+        startDestination = Graphs.AuthGraph.LogInScreen
     ) {
-        composable(Graphs.AuthGraph.LogInScreen.route) {
+        composable<Graphs.AuthGraph.LogInScreen> {
             val viewModel =
                 it.sharedViewModel<AuthenticationViewModel>(navController = navController)
             LogInScreen(
@@ -26,7 +26,7 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
                 }
             )
         }
-        composable(Graphs.AuthGraph.SignUpScreen.route) {
+        composable<Graphs.AuthGraph.SignUpScreen> {
             val viewModel =
                 it.sharedViewModel<AuthenticationViewModel>(navController = navController)
             SignUpScreen(

@@ -6,10 +6,7 @@ import androidx.credentials.CustomCredential
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.abhay.threddit.domain.AccountService
-import com.abhay.threddit.presentation.SIGN_IN_SCREEN
-import com.abhay.threddit.presentation.SIGN_UP_SCREEN
-import com.abhay.threddit.presentation.THREDDIT_MAIN_SCREEN
-import com.abhay.threddit.presentation.navigation.changes.Graphs
+import com.abhay.threddit.presentation.navigation.routes.Graphs
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,14 +19,14 @@ class AuthenticationViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    fun onSignInWithGoogle(credential: Credential, openAndPopUp: (String, String) -> Unit) {
+    fun onSignInWithGoogle(credential: Credential, openAndPopUp: (Any, Any) -> Unit) {
         viewModelScope.launch {
             try {
                 if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     val googleIdTokenCredential =
                         GoogleIdTokenCredential.createFrom(credential.data)
                     accountService.signInWithGoogle(googleIdTokenCredential.idToken)
-                    openAndPopUp(Graphs.HomeGraph.route, Graphs.AuthGraph.route)
+                    openAndPopUp(Graphs.HomeGraph, Graphs.AuthGraph)
                 } else {
                     Log.d("auth", "Unexpected Credential")// UNEXPECTED CREDENTIAL
                 }
@@ -40,14 +37,14 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
-    fun onSignUpWithGoogle(credential: Credential, openAndPopUp: (String, String) -> Unit) {
+    fun onSignUpWithGoogle(credential: Credential, openAndPopUp: (Any, Any) -> Unit) {
         viewModelScope.launch {
             try {
                 if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     val googleIdTokenCredential =
                         GoogleIdTokenCredential.createFrom(credential.data)
                     accountService.linkAccountWithGoogle(googleIdTokenCredential.idToken)
-                    openAndPopUp(Graphs.HomeGraph.route, Graphs.AuthGraph.route)
+                    openAndPopUp(Graphs.HomeGraph, Graphs.AuthGraph)
                 } else {
                     Log.d("auth", "Unexpected Credential")// UNEXPECTED CREDENTIAL
                 }

@@ -6,18 +6,18 @@ fun NavHostController.popUp() {
     popBackStack()
 }
 
-fun NavHostController.navigate(route: String) {
+fun NavHostController.navigate(route: Any) {
     navigate(route) { launchSingleTop = true }
 }
 
-fun NavHostController.navigateAndPopUp(route: String, popUp: String) {
+fun NavHostController.navigateAndPopUp(route: Any, popUp: Any) {
     navigate(route) {
         launchSingleTop = true
         popUpTo(popUp) { inclusive = true }
     }
 }
 
-fun NavHostController.clearAndNavigate(route: String) {
+fun NavHostController.clearAndNavigate(route: Any) {
     navigate(route) {
         launchSingleTop = true
         popUpTo(0) { inclusive = true }

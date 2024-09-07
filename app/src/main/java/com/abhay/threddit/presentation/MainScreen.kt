@@ -13,14 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
-import com.abhay.threddit.presentation.navigation.changes.Graphs
+import com.abhay.threddit.presentation.navigation.routes.Graphs
 import com.abhay.threddit.ui.theme.ThredditTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, openAndPopUp: (String, String) -> Unit) {
+fun MainScreen(modifier: Modifier = Modifier, openAndPopUp: (Any, Any) -> Unit) {
 
     val viewmodel = hiltViewModel<AuthenticationViewModel>()
 
@@ -38,7 +38,7 @@ fun MainScreen(modifier: Modifier = Modifier, openAndPopUp: (String, String) -> 
 
             Button(onClick = {
                 viewmodel.signOut()
-                openAndPopUp(Graphs.AuthGraph.route, Graphs.HomeGraph.route)
+                openAndPopUp(Graphs.AuthGraph, Graphs.HomeGraph)
             }) {
                 Text(text = "Sign Out")
             }

@@ -50,7 +50,7 @@ import com.google.android.gms.auth.api.Auth
 fun LogInScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel,
-    openAndPopUp: (String, String) -> Unit = { _,_ ->}
+    openAndPopUp: (Any, Any) -> Unit = { _,_ ->}
 ) {
 
     var passwordVisible by remember {

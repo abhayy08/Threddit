@@ -72,6 +72,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Navigation
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
 
@@ -93,7 +94,7 @@ dependencies {
     implementation ("androidx.credentials:credentials-play-services-auth:1.2.2")
     implementation ("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
-
+    // Coil
     implementation("io.coil-kt:coil-compose:2.2.2")
 
     // Dagger-Hilt
