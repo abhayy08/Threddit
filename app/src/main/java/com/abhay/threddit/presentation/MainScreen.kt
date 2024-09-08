@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.abhay.threddit.presentation.authentication.AuthUiEvents
 import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
 import com.abhay.threddit.presentation.navigation.routes.Graphs
 import com.abhay.threddit.ui.theme.ThredditTheme
@@ -35,9 +36,11 @@ fun MainScreen(modifier: Modifier = Modifier, openAndPopUp: (Any, Any) -> Unit) 
             val userId = asd?.uid ?: "NoUser"
 
             Text(text = userId)
+//            val isVerified = asd!!.isEmailVerified
+//            Text(text = "Is UserVerified: $isVerified")
 
             Button(onClick = {
-                viewmodel.signOut()
+                viewmodel.onEvent(AuthUiEvents.OnSignOut)
                 openAndPopUp(Graphs.AuthGraph, Graphs.HomeGraph)
             }) {
                 Text(text = "Sign Out")

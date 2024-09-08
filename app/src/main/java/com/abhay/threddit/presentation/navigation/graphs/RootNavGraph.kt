@@ -9,8 +9,11 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import com.abhay.threddit.presentation.common.SnackbarController
 
-fun NavGraphBuilder.RootNavGraph(navController: NavHostController) {
+fun NavGraphBuilder.RootNavGraph(
+    navController: NavHostController
+) {
 
     authNavGraph(navController = navController)
 
