@@ -2,20 +2,14 @@ package com.abhay.threddit.di
 
 import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
 import com.abhay.threddit.domain.AccountService
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AuthModule {
-
-    @Provides
-    @Singleton
-    fun provideAccountService() : AccountService {
-        return AccountServiceImpl()
-    }
+abstract class ServiceModule {
+    @Binds abstract fun provideAccountService(impl: AccountServiceImpl): AccountService
 
 }
