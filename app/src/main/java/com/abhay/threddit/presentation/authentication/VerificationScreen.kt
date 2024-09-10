@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.abhay.threddit.R
 import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
 import com.abhay.threddit.ui.theme.ThredditTheme
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun VerificationScreen(
@@ -106,7 +107,7 @@ fun VerificationScreen(
 private fun VerificationScreenPreview() {
     ThredditTheme {
         VerificationScreen(
-            viewModel = AuthenticationViewModel(AccountServiceImpl())
+            viewModel = AuthenticationViewModel(AccountServiceImpl(), firebaseAuth = FirebaseAuth.getInstance())
         )
     }
 }

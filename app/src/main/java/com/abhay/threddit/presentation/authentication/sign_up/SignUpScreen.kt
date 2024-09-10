@@ -10,24 +10,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,8 +41,8 @@ import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
 import com.abhay.threddit.presentation.authentication.AuthUiEvents
 import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
 import com.abhay.threddit.ui.theme.ThredditTheme
+import com.google.firebase.auth.FirebaseAuth
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
@@ -75,7 +75,8 @@ fun SignUpScreen(
                 },
                 confirmPassword = state.confirmPassword,
                 passwordVisible = state.isPasswordVisible,
-                confirmPasswordVisible = state.isConfirmPasswordVisible
+                confirmPasswordVisible = state.isConfirmPasswordVisible,
+                isLoading = state.isLoading
             )
         }
     }
@@ -90,7 +91,8 @@ fun EmailAndPasswordFields(
     passwordVisible: Boolean,
     confirmPasswordVisible: Boolean,
     onEvent: (AuthUiEvents) -> Unit,
-    onButtonClick: () -> Unit
+    onButtonClick: () -> Unit,
+    isLoading: Boolean
 ) {
 
     val borderColor = if (isSystemInDarkTheme()) Color.White else Color.DarkGray
@@ -156,6 +158,8 @@ fun EmailAndPasswordFields(
                 onEvent(AuthUiEvents.OnConfirmPasswordVisibilityChange)
             })
 
+        val indicatorColor =  if (!isSystemInDarkTheme()) Color.White else Color.DarkGray
+
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             modifier = Modifier.fillMaxWidth(),
@@ -163,6 +167,13 @@ fun EmailAndPasswordFields(
             onClick = onButtonClick
         ) {
             Text(text = stringResource(R.string.sign_up))
+            if(isLoading){
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.padding(horizontal = 10.dp).size(25.dp),
+                    color = indicatorColor
+                )
+            }
         }
 
     }
@@ -180,8 +191,8 @@ fun EmailTextField(
         value = email, onValueChange = {
             onEvent(AuthUiEvents.OnEmailChange(it))
         }, modifier = modifier.border(
-                1.dp, shape = RoundedCornerShape(4.dp), color = borderColor
-            ), label = {
+            1.dp, shape = RoundedCornerShape(4.dp), color = borderColor
+        ), label = {
             Text(text = stringResource(id = R.string.email))
         }, colors = textFieldColors
     )
@@ -201,8 +212,8 @@ fun PasswordTextField(
     TextField(value = password,
         onValueChange = onValueChange,
         modifier = modifier.border(
-                1.dp, shape = RoundedCornerShape(4.dp), color = borderColor
-            ),
+            1.dp, shape = RoundedCornerShape(4.dp), color = borderColor
+        ),
         label = label,
         colors = textFieldColors,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -225,7 +236,8 @@ fun PasswordTextField(
                     tint = color
                 )
             }
-        })
+        }
+    )
 }
 
 @Preview(
@@ -234,8 +246,12 @@ fun PasswordTextField(
 @Composable
 private fun SignUpPrev() {
     ThredditTheme {
-        SignUpScreen(viewModel = AuthenticationViewModel(
-            accountService = AccountServiceImpl()
-        ), openAndPopUp = { any: Any, any1: Any -> }, popUp = {})
+
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary){
+            SignUpScreen(viewModel = AuthenticationViewModel(
+                accountService = AccountServiceImpl(),
+                firebaseAuth = FirebaseAuth.getInstance()
+            ), openAndPopUp = { any: Any, any1: Any -> }, popUp = {})
+        }
     }
 }

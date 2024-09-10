@@ -16,4 +16,5 @@
     <string name="click_on_the_link_to_complete_the_verification_process">Click on the link to complete the verification process</string>
     <string name="you_might_need_to_check_your_spam_folder">You might need to check your spam folder</string>
     <string name="resend_email">Resend email</string>
+    <string name="login">Login</string>
 </resources>

@@ -32,9 +32,8 @@ fun ThredditApp() {
         ) {
             val navController = rememberNavController()
             val isUserLoggedIn = Firebase.auth.currentUser != null
-            val isUserVerified = Firebase.auth.currentUser?.isEmailVerified ?: false
             val startDest =
-                if (isUserLoggedIn && isUserVerified) Graphs.HomeGraph else Graphs.AuthGraph
+                if (isUserLoggedIn) Graphs.HomeGraph else Graphs.AuthGraph
 
             val snackBarHostState = remember {
                 SnackbarHostState()

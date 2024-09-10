@@ -6,4 +6,5 @@ data class AuthScreenState(
     val confirmPassword: String = "",
     val isConfirmPasswordVisible: Boolean = false,
     val isPasswordVisible: Boolean = false,
+    val isLoading: Boolean = false,
 )

@@ -21,7 +21,7 @@ import com.google.firebase.auth.auth
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, openAndPopUp: (Any, Any) -> Unit) {
+fun HomeScreen(modifier: Modifier = Modifier, openAndPopUp: (Any, Any) -> Unit) {
 
     val viewmodel = hiltViewModel<AuthenticationViewModel>()
 
@@ -55,8 +55,6 @@ fun MainScreen(modifier: Modifier = Modifier, openAndPopUp: (Any, Any) -> Unit) 
 @Composable
 private fun Preview() {
     ThredditTheme {
-//        MainScreen {
-//
-//        }
+
     }
 }

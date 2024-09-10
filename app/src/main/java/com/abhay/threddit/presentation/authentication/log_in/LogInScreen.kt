@@ -1,6 +1,7 @@
 package com.abhay.threddit.presentation.authentication.log_in
 
 import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -43,9 +44,14 @@ import com.abhay.threddit.presentation.authentication.components.AuthenticationB
 import com.abhay.threddit.presentation.authentication.components.OrDivider
 import com.abhay.threddit.presentation.navigation.routes.Graphs
 import com.abhay.threddit.ui.theme.ThredditTheme
+import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.graphics.StrokeCap
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable.Indicator
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LogInScreen(
     modifier: Modifier = Modifier,
@@ -59,6 +65,8 @@ fun LogInScreen(
     val passwordVisible = state.isPasswordVisible
 
     val borderColor = if (isSystemInDarkTheme()) Color.White else Color.DarkGray
+
+    val indicatorColor =  if (!isSystemInDarkTheme()) Color.White else Color.DarkGray
 
     val textFieldColors = TextFieldDefaults.colors(
         focusedIndicatorColor = Color.Transparent,
@@ -173,7 +181,20 @@ fun LogInScreen(
                     viewModel.onEvent(AuthUiEvents.OnLogInWithEmail(openAndPopUp, openScreen))
                 },
             ) {
-                Text(text = "Login")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(text = stringResource(R.string.login))
+                    if(state.isLoading){
+                        CircularProgressIndicator(
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.padding(horizontal = 10.dp).size(25.dp),
+                            color = indicatorColor
+                        )
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -202,7 +223,8 @@ fun LogInScreen(
 private fun AuthScreenPreview() {
     ThredditTheme {
         LogInScreen(viewModel = AuthenticationViewModel(
-            accountService = AccountServiceImpl()
+            accountService = AccountServiceImpl(),
+            firebaseAuth = FirebaseAuth.getInstance()
         ), openAndPopUp = { any: Any, any1: Any -> }, openScreen = {})
     }
 }
