@@ -2,6 +2,7 @@ package com.abhay.threddit.data.firebase_auth
 
 import com.abhay.threddit.domain.AccountService
 import com.abhay.threddit.domain.User
+import com.google.firebase.Firebase
 import com.google.firebase.auth.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -14,22 +15,22 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     // Sign in with Google using the ID Token
     override suspend fun signInWithGoogle(idToken: String) {
         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
-        FirebaseAuth.getInstance().signInWithCredential(firebaseCredential).await()
+        Firebase.auth.signInWithCredential(firebaseCredential).await()
     }
 
     // Sign in with email and password
     override suspend fun signInWithEmail(email: String, password: String) {
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()
+        Firebase.auth.signInWithEmailAndPassword(email, password).await()
     }
 
     // Sign up with email and password
     override suspend fun signUpWithEmail(email: String, password: String) {
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password).await()
+        Firebase.auth.createUserWithEmailAndPassword(email, password).await()
     }
 
     // Send email verification
     override suspend fun verifyUserAccount(email: String, password: String) {
-        FirebaseAuth.getInstance().currentUser?.sendEmailVerification()?.await()
+        Firebase.auth.currentUser?.sendEmailVerification()?.await()
     }
 
     // Observe the current Firebase user with Flow
@@ -38,22 +39,22 @@ class AccountServiceImpl @Inject constructor() : AccountService {
             val listener = FirebaseAuth.AuthStateListener { auth ->
                 trySend(auth.currentUser)
             }
-            FirebaseAuth.getInstance().addAuthStateListener(listener)
-            awaitClose { FirebaseAuth.getInstance().removeAuthStateListener(listener) }
+            Firebase.auth.addAuthStateListener(listener)
+            awaitClose { Firebase.auth.removeAuthStateListener(listener) }
         }
 
     // Get the current user's ID
     override val currentUserId: String
-        get() = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        get() = Firebase.auth.currentUser?.uid.orEmpty()
 
     // Check if there is a current user signed in
     override fun hasUser(): Boolean {
-        return FirebaseAuth.getInstance().currentUser != null
+        return Firebase.auth.currentUser != null
     }
 
     // Get the profile of the current user
     override fun getUserProfile(): User {
-        return FirebaseAuth.getInstance().currentUser.toThredditUser()
+        return Firebase.auth.currentUser.toThredditUser()
     }
 
     // Update the display name of the current user
@@ -61,17 +62,17 @@ class AccountServiceImpl @Inject constructor() : AccountService {
         val profileUpdates = userProfileChangeRequest {
             displayName = newDisplayName
         }
-        FirebaseAuth.getInstance().currentUser?.updateProfile(profileUpdates)?.await()
+        Firebase.auth.currentUser?.updateProfile(profileUpdates)?.await()
     }
 
     // Sign out the current user
     override suspend fun signOut() {
-        FirebaseAuth.getInstance().signOut()
+        Firebase.auth.signOut()
     }
 
     // Delete the current user account
     override suspend fun deleteAccount() {
-        FirebaseAuth.getInstance().currentUser?.delete()?.await()
+        Firebase.auth.currentUser?.delete()?.await()
     }
 
     // Helper function to convert FirebaseUser to ThredditUser
@@ -81,10 +82,10 @@ class AccountServiceImpl @Inject constructor() : AccountService {
         } else {
             User(
                 id = this.uid,
-                email = this.email.orEmpty(),
+                email = (this.email ?: false).toString(),
                 provider = this.providerId,
                 displayName = this.displayName.orEmpty(),
-                isVerified = this.isEmailVerified
+                isEmailVerified = this.isEmailVerified
             )
         }
     }

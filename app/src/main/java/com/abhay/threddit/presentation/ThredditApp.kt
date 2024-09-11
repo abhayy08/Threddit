@@ -1,11 +1,17 @@
-package com.abhay.threddit.presentation.main
+package com.abhay.threddit.presentation
 
 import android.content.res.Configuration
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -15,7 +21,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,11 +38,14 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.abhay.threddit.R
 import com.abhay.threddit.presentation.common.ObserveAsEvents
 import com.abhay.threddit.presentation.common.SnackbarController
 import com.abhay.threddit.presentation.navigation.graphs.RootNavGraph
 import com.abhay.threddit.presentation.navigation.routes.Graphs
+import com.abhay.threddit.ui.theme.ThredditFont
 import com.abhay.threddit.ui.theme.ThredditTheme
+import com.abhay.threddit.utils.navigateWithStateAndPopToStart
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
@@ -51,7 +60,7 @@ fun ThredditApp() {
             val isUserLoggedIn = Firebase.auth.currentUser != null
 //            val isUserLoggedIn = true
             val startDest =
-                if (isUserLoggedIn && Firebase.auth.currentUser?.isEmailVerified == true) Graphs.Feed else Graphs.AuthGraph
+                if (isUserLoggedIn) Graphs.MainNavGraph else Graphs.AuthGraph
 
             val snackBarHostState = remember {
                 SnackbarHostState()
@@ -75,11 +84,16 @@ fun ThredditApp() {
             }
 
             Scaffold(
+                modifier = Modifier.fillMaxSize(),
                 containerColor = MaterialTheme.colorScheme.background,
                 snackbarHost = {
                     SnackbarHost(hostState = snackBarHostState)
                 },
-                topBar = { ThredditTopAppBar(modifier = Modifier.height(50.dp)) },
+                topBar = {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+                    ThredditTopAppBar(currentDestination = currentDestination)
+                },
                 bottomBar = {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentDestination = navBackStackEntry?.destination
@@ -89,7 +103,7 @@ fun ThredditApp() {
                         containerColor = Color.Transparent,
                         currentDestination = currentDestination,
                         onClick = { route ->
-                            navController.navigate(route)
+                            navController.navigateWithStateAndPopToStart(route)
                         }
                     )
                 }
@@ -97,7 +111,9 @@ fun ThredditApp() {
                 NavHost(
                     navController = navController,
                     startDestination = startDest,
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .windowInsetsPadding(WindowInsets.ime)
                 ) {
                     RootNavGraph(navController = navController)
                 }
@@ -115,17 +131,23 @@ fun ThredditNavigationBar(
     onClick: (Any) -> Unit = {}
 ) {
     val isDarkTheme = isSystemInDarkTheme()
-    val isVisible = topLevelRoutes.any { topLevelRoute -> currentDestination?.hierarchy?.any { it.hasRoute(topLevelRoute.route::class) } == true }
+    val isVisible = topLevelRoutes.any { topLevelRoute ->
+        currentDestination?.hierarchy?.any {
+            it.hasRoute(topLevelRoute.route::class)
+        } == true
+    }
 
-    if(isVisible){
+    if (isVisible) {
         NavigationBar(
             modifier = modifier,
             containerColor = containerColor
         ) {
             topLevelRoutes.forEach { topLevelRoute ->
 
-                val iconType = if (isDarkTheme) topLevelRoute.lightIconType else topLevelRoute.darkIconType
-                val isSelected = currentDestination?.hierarchy?.any { it.hasRoute(topLevelRoute.route::class) } == true
+                val iconType =
+                    if (isDarkTheme) topLevelRoute.lightIconType else topLevelRoute.darkIconType
+                val isSelected =
+                    currentDestination?.hierarchy?.any { it.hasRoute(topLevelRoute.route::class) } == true
 
                 NavigationBarItem(
                     selected = isSelected,
@@ -147,14 +169,38 @@ fun ThredditNavigationBar(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ThredditTopAppBar(modifier: Modifier = Modifier) {
-    TopAppBar(
-        modifier = modifier,
-        title = { /*TODO*/ },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent
+fun ThredditTopAppBar(
+    modifier: Modifier = Modifier,
+    currentDestination: NavDestination?
+) {
+
+    val isVisible = topLevelRoutes.any { topLevelRoute ->
+        currentDestination?.hierarchy?.any {
+            it.hasRoute(topLevelRoute.route::class)
+        } == true
+    }
+    if (isVisible) {
+        CenterAlignedTopAppBar(
+            modifier = modifier,
+            title = {
+                Text(
+                    text = "Threddit",
+                    style = MaterialTheme.typography.headlineMedium.copy(fontFamily = ThredditFont)
+                )
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent
+            ),
+            actions = {
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.menu),
+                        contentDescription = "menu"
+                    )
+                }
+            }
         )
-    )
+    }
 }
 
 @Preview(
@@ -163,9 +209,8 @@ fun ThredditTopAppBar(modifier: Modifier = Modifier) {
 )
 @Composable
 private fun AppPrev() {
-    ThredditTheme {
-        ThredditApp()
-    }
+    ThredditApp()
+
 }
 
 

@@ -1,5 +1,7 @@
 package com.abhay.threddit.presentation.navigation.graphs
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -19,7 +21,11 @@ import com.abhay.threddit.utils.popUp
 fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
 
     navigation<Graphs.AuthGraph>(
-        startDestination = Graphs.AuthGraph.LogInScreen
+        startDestination = Graphs.AuthGraph.LogInScreen,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popExitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None }
     ) {
         composable<Graphs.AuthGraph.LogInScreen> {
             val viewModel =

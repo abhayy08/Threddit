@@ -8,12 +8,7 @@ sealed class Screen
 @Serializable
 sealed class Graphs {
 
-    @Serializable
-    data object HomeGraph : Graphs() {
-        @Serializable
-        data object HomeScreen : Screen()
-    }
-
+    // Authentication
     @Serializable
     data object AuthGraph : Graphs() {
         @Serializable
@@ -22,6 +17,45 @@ sealed class Graphs {
         data object SignUpScreen : Screen()
         @Serializable
         data object VerificationDialog: Screen()
+    }
 
+    // Main Graph
+    @Serializable
+    data object MainNavGraph : Graphs() {
+
+        // Feed Graph
+        @Serializable
+        data object Feed : Graphs() {
+            @Serializable
+            data object FeedScreen: Screen()
+        }
+
+        // Search Graph
+        @Serializable
+        data object Search: Graphs() {
+            @Serializable
+            data object SearchScreen: Screen()
+        }
+
+        // Add Post Graph
+        @Serializable
+        data object AddPost: Graphs() {
+            @Serializable
+            data object AddPostScreen: Screen()
+        }
+
+        // Activity Graph
+        @Serializable
+        data object Activity: Graphs() {
+            @Serializable
+            data object ActivityScreen: Screen()
+        }
+
+        // Profile Graph
+        @Serializable
+        data object Profile : Graphs() {
+            @Serializable
+            data object ProfileScreen: Screen()
+        }
     }
 }

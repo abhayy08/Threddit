@@ -90,7 +90,7 @@ fun VerificationScreen(
                 Button(
                     onClick = { viewModel.onEvent(AuthUiEvents.OnResendVerificationLink) },
                     modifier = Modifier.padding(12.dp),
-                    shape = RoundedCornerShape(4.dp)
+                    shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(text = stringResource(R.string.resend_email))
                 }

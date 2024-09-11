@@ -17,4 +17,9 @@
     <string name="you_might_need_to_check_your_spam_folder">You might need to check your spam folder</string>
     <string name="resend_email">Resend email</string>
     <string name="login">Login</string>
+    <string name="posts">Posts</string>
+    <string name="comments">Comments</string>
+    <string name="user_image">User Image</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="share_profile">Share Profile</string>
 </resources>

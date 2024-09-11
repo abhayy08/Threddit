@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.main
+package com.abhay.threddit.presentation
 
 import com.abhay.threddit.R
 import com.abhay.threddit.presentation.navigation.routes.Graphs
@@ -20,7 +20,7 @@ data class TopLevelRoute<T : Any>(
 val topLevelRoutes = listOf(
     TopLevelRoute(
         name = "Home",
-        route = Graphs.Feed.FeedScreen,
+        route = Graphs.MainNavGraph.Feed.FeedScreen,
         darkIconType = IconType(
             selectedIcon = R.drawable.home_filled,
             unSelectedIcon = R.drawable.home
@@ -32,7 +32,7 @@ val topLevelRoutes = listOf(
     ),
     TopLevelRoute(
         name = "Search",
-        route = Graphs.Search.SearchScreen,
+        route = Graphs.MainNavGraph.Search.SearchScreen,
         darkIconType = IconType(
             selectedIcon = R.drawable.explore__1_,
             unSelectedIcon = R.drawable.search
@@ -44,7 +44,7 @@ val topLevelRoutes = listOf(
     ),
     TopLevelRoute(
         name = "Add Post",
-        route = Graphs.AddPost.AddPostScreen,
+        route = Graphs.MainNavGraph.AddPost.AddPostScreen,
         darkIconType = IconType(
             selectedIcon = R.drawable.add_post,
             unSelectedIcon = R.drawable.add_post_dark
@@ -56,7 +56,7 @@ val topLevelRoutes = listOf(
     ),
     TopLevelRoute(
         name = "Activity",
-        route = Graphs.Activity.ActivityScreen,
+        route = Graphs.MainNavGraph.Activity.ActivityScreen,
         darkIconType = IconType(
             selectedIcon = R.drawable.heart__1_,
             unSelectedIcon = R.drawable.heart
@@ -68,7 +68,7 @@ val topLevelRoutes = listOf(
     ),
     TopLevelRoute(
         name = "Profile",
-        route = Graphs.Profile.ProfileScreen,
+        route = Graphs.MainNavGraph.Profile.ProfileScreen,
         darkIconType = IconType(
             selectedIcon = R.drawable.rectangle_3,
             unSelectedIcon = R.drawable.profile

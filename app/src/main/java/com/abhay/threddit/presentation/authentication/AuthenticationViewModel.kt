@@ -96,24 +96,29 @@ class AuthenticationViewModel @Inject constructor(
     }
 
     // Observe email verification status
-    suspend fun observeEmailVerification(onEmailVerified: (Any, Any) -> Unit) {
-        var currentUser: FirebaseUser? = null
+    suspend fun observeEmailVerification(openAndPopUp: (Any, Any) -> Unit) {
+//        var currentUser: FirebaseUser? = null
+//
+//        This part is causing a infinite while loop  // CHECK LATER
+//        accountService.currentUser.collect { user ->
+//            Log.d("CurrentUser: ", user?.uid.orEmpty() + " " + user?.isEmailVerified)
+//            currentUser = user
+//        }
 
-        accountService.currentUser.collect { user ->
-            currentUser = user
-        }
+        val currentUser = firebaseAuth.currentUser
 
         while (!_isEmailVerified.value) {
             currentUser?.reload() // Reloads the user data
+//            Log.d("InsideWhileLoop: ", currentUser?.uid.orEmpty() + " " + currentUser?.isEmailVerified)
             val newVerifiedStatus = currentUser?.isEmailVerified ?: false
             if (newVerifiedStatus != _isEmailVerified.value) {
                 _isEmailVerified.value = newVerifiedStatus
                 if (_isEmailVerified.value) {
-                    onEmailVerified(Graphs.HomeGraph, Graphs.AuthGraph)
+                    openAndPopUp(Graphs.MainNavGraph.Feed, Graphs.AuthGraph)
                     break
                 }
             }
-            delay(5000)
+            delay(3000)
         }
     }
 
@@ -125,15 +130,15 @@ class AuthenticationViewModel @Inject constructor(
             updateLoadingStatus(true)
 
             accountService.signInWithEmail(_uiState.value.email, _uiState.value.password)
+            updateEmailVerificationStatus()
 
             updateLoadingStatus(false)
 
-            updateEmailVerificationStatus()
             if (!_isEmailVerified.value) {
-                openScreen(Graphs.AuthGraph.VerificationDialog)
                 accountService.verifyUserAccount(_uiState.value.email, _uiState.value.password)
+                openScreen(Graphs.AuthGraph.VerificationDialog)
             } else {
-                openAndPopUp(Graphs.HomeGraph, Graphs.AuthGraph)
+                openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
             }
         }
     }
@@ -146,9 +151,8 @@ class AuthenticationViewModel @Inject constructor(
             accountService.signUpWithEmail(_uiState.value.email, _uiState.value.password)
 
             updateLoadingStatus(false)
-
-            signOut() // Sign out the user after signup
             popUp()
+            signOut() // Sign out the user after signup
             resetState()
         }
     }
@@ -159,7 +163,7 @@ class AuthenticationViewModel @Inject constructor(
             if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                 accountService.signInWithGoogle(googleIdTokenCredential.idToken)
-                openAndPopUp(Graphs.HomeGraph, Graphs.AuthGraph)
+                openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
             } else {
                 Log.d("auth", "Unexpected Credential")
             }

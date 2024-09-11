@@ -1,37 +1,36 @@
 package com.abhay.threddit.ui.theme
 
-import android.graphics.fonts.Font
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.googlefonts.Font
-import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.unit.sp
 import com.abhay.threddit.R
 
-val provider = GoogleFont.Provider(
-    providerAuthority = "com.google.android.gms.fonts",
-    providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs
-)
+//val provider = GoogleFont.Provider(
+//    providerAuthority = "com.google.android.gms.fonts",
+//    providerPackage = "com.google.android.gms",
+//    certificates = R.array.com_google_android_gms_fonts_certs
+//)
 
-val bodyFontFamily = FontFamily(
-    Font(
-        googleFont = GoogleFont("Poppins"),
-        fontProvider = provider,
+val bodyFontFamily =
+    FontFamily(
+        Font(
+            R.font.poppins_regular
+        )
     )
-)
+
 
 val displayFontFamily = FontFamily(
-    Font(
-        googleFont = GoogleFont("Poppins"),
-        fontProvider = provider,
-    )
+    Font(R.font.poppins_regular)
+)
+
+val ThredditFont = FontFamily(
+    Font(R.font.bungee_inline_regular)
 )
 
 // Default Material 3 typography values
 val baseline = Typography()
+
+
 
 val AppTypography = Typography(
     displayLarge = baseline.displayLarge.copy(fontFamily = displayFontFamily),
