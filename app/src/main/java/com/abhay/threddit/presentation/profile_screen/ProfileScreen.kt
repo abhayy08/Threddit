@@ -215,7 +215,7 @@ fun UserInfo(
                     .wrapContentHeight()
                     .padding(horizontal = 2.dp),
                 shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent
                 ),
@@ -233,7 +233,7 @@ fun UserInfo(
                     .wrapContentHeight()
                     .padding(horizontal = 2.dp),
                 shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent
                 ),
