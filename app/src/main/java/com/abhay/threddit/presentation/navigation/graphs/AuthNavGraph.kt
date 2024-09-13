@@ -8,12 +8,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.navigation
-import com.abhay.threddit.presentation.screens.authentication.AddUserDetailsScreen
+import com.abhay.threddit.presentation.screens.authentication.add_user_details.AddUserDetailsScreen
 import com.abhay.threddit.presentation.screens.authentication.AuthenticationViewModel
 import com.abhay.threddit.presentation.screens.authentication.VerificationScreen
 import com.abhay.threddit.presentation.screens.authentication.log_in.LogInScreen
 import com.abhay.threddit.presentation.screens.authentication.sign_up.SignUpScreen
 import com.abhay.threddit.presentation.navigation.routes.Graphs
+import com.abhay.threddit.utils.navigate
 import com.abhay.threddit.utils.navigateAndPopUp
 import com.abhay.threddit.utils.popUp
 
@@ -25,7 +26,7 @@ fun NavGraphBuilder.authNavGraph(
 
     navigation<Graphs.AuthGraph>(
         startDestination = Graphs.AuthGraph.LogInScreen,
-        enterTransition = { slideInHorizontally { -it } },
+        enterTransition = { slideInHorizontally { it } },
         exitTransition = { slideOutHorizontally { it } },
         popEnterTransition = { slideInHorizontally { -it } },
         popExitTransition = { slideOutHorizontally { it } },
@@ -48,8 +49,8 @@ fun NavGraphBuilder.authNavGraph(
                 it.sharedViewModel<AuthenticationViewModel>(navController = navController)
             SignUpScreen(
                 viewModel = viewModel,
-                openAndPopUp = { route, popUp ->
-                    navController.navigateAndPopUp(route, popUp)
+                openScreen = { route ->
+                    navController.navigate(route)
                 },
                 popUp = {
                     navController.popUp()
@@ -65,6 +66,9 @@ fun NavGraphBuilder.authNavGraph(
                 viewModel = viewModel,
                 onOpenAndPopUp = { route, popUp ->
                     navController.navigateAndPopUp(route, popUp)
+                },
+                popUp = {
+                    navController.popUp()
                 }
             )
         }
@@ -83,6 +87,9 @@ fun NavGraphBuilder.authNavGraph(
                 viewModel = viewModel,
                 openAndPopUp = { route, popUp ->
                     navController.navigateAndPopUp(route, popUp)
+                },
+                popUp = {
+                    navController.popUp()
                 }
             )
         }

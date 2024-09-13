@@ -43,12 +43,9 @@ import com.abhay.threddit.R
 import com.abhay.threddit.presentation.common.ObserveAsEvents
 import com.abhay.threddit.presentation.common.SnackbarController
 import com.abhay.threddit.presentation.navigation.graphs.RootNavGraph
-import com.abhay.threddit.presentation.navigation.routes.Graphs
-import com.abhay.threddit.ui.theme.ThredditFont
+import com.abhay.threddit.ui.theme.ThredditInlineFont
 import com.abhay.threddit.ui.theme.ThredditTheme
 import com.abhay.threddit.utils.navigateWithStateAndPopToStart
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
 
 @Composable
@@ -189,7 +186,7 @@ fun ThredditTopAppBar(
             title = {
                 Text(
                     text = "Threddit",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontFamily = ThredditFont)
+                    style = MaterialTheme.typography.headlineMedium.copy(fontFamily = ThredditInlineFont)
                 )
             },
             colors = TopAppBarDefaults.topAppBarColors(

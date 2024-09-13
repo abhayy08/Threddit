@@ -10,4 +10,11 @@ data class AuthScreenState(
     val isConfirmPasswordVisible: Boolean = false,
     val isPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
+
+    val checkingUsernameUniqueness: Boolean = false,
+
+    val usernameError: Boolean = false,
+    val nameError: Boolean = false,
+    val dobError: Boolean = false,
+    val dob: String = "",
 )

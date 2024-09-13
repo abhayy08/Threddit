@@ -23,8 +23,18 @@ val displayFontFamily = FontFamily(
     Font(R.font.poppins_regular)
 )
 
-val ThredditFont = FontFamily(
+val ThredditInlineFont = FontFamily(
     Font(R.font.bungee_inline_regular)
+)
+
+val ThredditRegularFont = FontFamily(
+    Font(R.font.bungee_regular)
+)
+val ThredditOutlineFont = FontFamily(
+    Font(R.font.bungee_outline_regular)
+)
+val ThredditShadeFont = FontFamily(
+    Font(R.font.bungee_shade_regular)
 )
 
 // Default Material 3 typography values

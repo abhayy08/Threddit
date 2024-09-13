@@ -16,14 +16,17 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import okhttp3.internal.toImmutableList
 import javax.inject.Inject
 
-class AccountServiceImpl @Inject constructor() : AccountService {
+class AccountServiceImpl @Inject constructor(
+) : AccountService {
 
     // Sign in with Google using the ID Token
     override suspend fun signInWithGoogle(idToken: String) {
@@ -44,29 +47,6 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     // Send email verification
     override suspend fun verifyUserAccount(email: String, password: String) {
         Firebase.auth.currentUser?.sendEmailVerification()?.await()
-    }
-
-    override suspend fun createUserInFireStore(
-        name: String,
-        username: String,
-        email: String,
-        bio: String
-    ) {
-        val db = Firebase.firestore
-        val userId = Firebase.auth.currentUser!!.uid
-        val userData = hashMapOf(
-            DISPLAY_NAME to name,
-            USERNAME to username,
-            PROFILE_PIC_URL to null,
-            EMAIL to email,
-            BIO to bio
-        )
-
-        db.collection(USERS).document(userId)
-            .set(userData)
-            .addOnSuccessListener { Log.d("FirestoreService", "User data successfully stored!") }
-            .addOnFailureListener { e -> Log.w("FirestoreService", "Error storing user data", e) }
-
     }
 
     override fun getUserFlow(): Flow<ThredditUser> = callbackFlow {
@@ -114,6 +94,10 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     // Get the profile of the current user
     override fun getUserProfile(): User {
         return Firebase.auth.currentUser.toThredditUser()
+    }
+
+    override fun getFirebaseUser(): FirebaseUser? {
+        return Firebase.auth.currentUser
     }
 
     // Update the display name of the current user

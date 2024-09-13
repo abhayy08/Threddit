@@ -9,7 +9,7 @@ sealed class AuthUiEvents {
         val openScreen: (Any) -> Unit
     ) : AuthUiEvents()
 
-    data class OnSignUpWithEmail(val popUp: () -> Unit) : AuthUiEvents()
+    data class OnSignUpWithEmail(val openScreen: (Any) -> Unit) : AuthUiEvents()
     data class OnSignInWithGoogle(
         val credential: Credential,
         val openScreen: (Any) -> Unit,
@@ -21,6 +21,7 @@ sealed class AuthUiEvents {
 
     data class OnDisplayNameChange(val displayName: String): AuthUiEvents()
     data class OnUsernameChange(val username: String): AuthUiEvents()
+    data class OnDOBChange(val dob: String): AuthUiEvents()
     data class OnBioChange(val bio: String): AuthUiEvents()
 
     data class OnEmailChange(val email: String) : AuthUiEvents()
@@ -29,6 +30,7 @@ sealed class AuthUiEvents {
     data object OnPasswordVisibilityChange : AuthUiEvents()
     data object OnConfirmPasswordVisibilityChange : AuthUiEvents()
     data class SaveUserDetails(val openAndPopUp: (Any, Any) -> Unit) : AuthUiEvents()
+
 
 }
 

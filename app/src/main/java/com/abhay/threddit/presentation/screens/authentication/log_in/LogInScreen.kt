@@ -44,10 +44,22 @@ import com.abhay.threddit.presentation.navigation.routes.Graphs
 import com.abhay.threddit.ui.theme.ThredditTheme
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.draw.shadow
+import com.abhay.threddit.data.firebase.firestore.FirestoreServiceImpl
+import com.abhay.threddit.presentation.components.CustomTextField
+import com.abhay.threddit.ui.theme.ThredditInlineFont
+import com.abhay.threddit.ui.theme.ThredditOutlineFont
+import com.abhay.threddit.ui.theme.ThredditRegularFont
+import com.abhay.threddit.ui.theme.ThredditShadeFont
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 
 
 @Composable
@@ -64,163 +76,154 @@ fun LogInScreen(
 
     val labelAndCursorColor = if (isSystemInDarkTheme()) Color.LightGray else Color.DarkGray
 
-    val indicatorColor =  if (!isSystemInDarkTheme()) Color.White else Color.DarkGray
+    val indicatorColor =  if (isSystemInDarkTheme()) Color.White else Color.DarkGray
 
-    val textFieldColors = TextFieldDefaults.colors(
-        focusedIndicatorColor = Color.Transparent,
-        unfocusedIndicatorColor = Color.Transparent,
-        disabledIndicatorColor = Color.Transparent,
-        errorIndicatorColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        focusedContainerColor = Color.Transparent,
-        focusedLabelColor = labelAndCursorColor,
-        unfocusedLabelColor = labelAndCursorColor.copy(0.7f),
-        cursorColor = labelAndCursorColor
-    )
     Surface(
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.background,
     ) {
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.SpaceAround
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+//            Spacer(modifier = Modifier.height(0.dp))
             Text(
                 modifier = Modifier.padding(vertical = 16.dp),
                 text = stringResource(id = R.string.log_in_title),
-                style = MaterialTheme.typography.displayLarge
+                style = MaterialTheme.typography.displayLarge,
+                fontFamily = ThredditShadeFont
             )
 
             //Email
-            TextField(
-                value = state.email,
-                onValueChange = {
-                    viewModel.onEvent(AuthUiEvents.OnEmailChange(it))
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        1.dp,
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.onSecondary.copy(0.3f)
-                    ),
-                label = {
-                    Text(text = stringResource(id = R.string.email))
-                },
-                colors = textFieldColors
-            )
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // Password
-            TextField(
-                value = state.password,
-                onValueChange = {
-                    viewModel.onEvent(AuthUiEvents.OnPasswordChange(it))
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        1.dp,
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.onSecondary.copy(0.3f)
-                    ),
-                colors = textFieldColors,
-                label = {
-                    Text(text = stringResource(id = R.string.password))
-                },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-
-                    val icon = if (passwordVisible) Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
-
-                    val dark = isSystemInDarkTheme()
-                    val color = if (dark) {
-                        Color.White
-                    } else {
-                        Color.DarkGray
-                    }
-
-                    IconButton(onClick = {
-                        viewModel.onEvent(AuthUiEvents.OnPasswordVisibilityChange)
-                    }) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = "Toggle password Visibility",
-                            tint = color
-                        )
-                    }
-                }
-            )
-            Row(
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+            Column(
+                modifier = Modifier.fillMaxWidth()
+                    .fillMaxHeight(0.9f),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = stringResource(R.string.don_t_have_an_account),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = stringResource(R.string.create_account),
-                    modifier = Modifier.clickable {
-                        openScreen(Graphs.AuthGraph.SignUpScreen)
-                        viewModel.resetState()
+                CustomTextField(
+                    value = state.email,
+                    onValueChange = {
+                        viewModel.onEvent(AuthUiEvents.OnEmailChange(it))
                     },
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            1.dp,
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.onSecondary.copy(0.3f)
+                        ),
+                    label = stringResource(id = R.string.email)
                 )
 
-            }
+                Spacer(modifier = Modifier.height(18.dp))
 
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 10.dp)
-                    .shadow(8.dp, shape = RoundedCornerShape(8.dp)),
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                ),
-                onClick = {
-                    viewModel.onEvent(AuthUiEvents.OnLogInWithEmail(openAndPopUp, openScreen))
-                },
-            ) {
+                // Password
+                CustomTextField(
+                    value = state.password,
+                    onValueChange = {
+                        viewModel.onEvent(AuthUiEvents.OnPasswordChange(it))
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            1.dp,
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.onSecondary.copy(0.3f)
+                        ),
+                    label = stringResource(id = R.string.password),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+
+                        val icon = if (passwordVisible) Icons.Filled.Visibility
+                        else Icons.Filled.VisibilityOff
+
+                        val dark = isSystemInDarkTheme()
+                        val color = if (dark) {
+                            Color.White
+                        } else {
+                            Color.DarkGray
+                        }
+
+                        IconButton(onClick = {
+                            viewModel.onEvent(AuthUiEvents.OnPasswordVisibilityChange)
+                        }) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = "Toggle password Visibility",
+                                tint = color
+                            )
+                        }
+                    }
+                )
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-
+                    horizontalArrangement = Arrangement.Start
                 ) {
-                    Text(text = stringResource(R.string.login))
-                    if(state.isLoading){
-                        CircularProgressIndicator(
-                            strokeWidth = 2.dp,
-                            modifier = Modifier
-                                .padding(horizontal = 10.dp)
-                                .size(25.dp),
-                            color = indicatorColor
-                        )
+                    Text(
+                        text = stringResource(R.string.don_t_have_an_account),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = stringResource(R.string.create_account),
+                        modifier = Modifier.clickable {
+                            openScreen(Graphs.AuthGraph.SignUpScreen)
+                            viewModel.resetState()
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                }
+
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp)
+                        .shadow(10.dp, shape = RoundedCornerShape(8.dp)),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
+                    onClick = {
+                        viewModel.onEvent(AuthUiEvents.OnLogInWithEmail(openAndPopUp, openScreen))
+                    },
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+
+                        ) {
+                        Text(text = stringResource(R.string.login))
+                        if(state.isLoading){
+                            CircularProgressIndicator(
+                                strokeWidth = 2.dp,
+                                modifier = Modifier
+                                    .padding(horizontal = 10.dp)
+                                    .size(25.dp),
+                                color = indicatorColor
+                            )
+                        }
                     }
                 }
-            }
 
 
-            Spacer(modifier = Modifier.height(12.dp))
-            OrDivider()
+                Spacer(modifier = Modifier.height(12.dp))
+                OrDivider()
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            AuthenticationButton(
-                modifier = Modifier.fillMaxWidth(),
-                buttonText = R.string.sign_in_with_google
-            ) { credential ->
-                viewModel.onEvent(AuthUiEvents.OnSignInWithGoogle(credential, openScreen, openAndPopUp))
+                AuthenticationButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    buttonText = R.string.sign_in_with_google
+                ) { credential ->
+                    viewModel.onEvent(AuthUiEvents.OnSignInWithGoogle(credential, openScreen, openAndPopUp))
+                }
             }
         }
     }
@@ -236,7 +239,11 @@ private fun AuthScreenPreview() {
     ThredditTheme {
         LogInScreen(viewModel = AuthenticationViewModel(
             accountService = AccountServiceImpl(),
-            firebaseAuth = FirebaseAuth.getInstance()
+            firestoreService = FirestoreServiceImpl(
+                db = Firebase.firestore,
+                auth = Firebase.auth,
+                storage = Firebase.storage
+            )
         ), openAndPopUp = { any: Any, any1: Any -> }, openScreen = {})
     }
 }

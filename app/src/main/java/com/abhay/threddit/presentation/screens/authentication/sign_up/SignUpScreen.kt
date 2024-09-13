@@ -7,6 +7,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,16 +42,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhay.threddit.R
 import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
+import com.abhay.threddit.data.firebase.firestore.FirestoreServiceImpl
+import com.abhay.threddit.presentation.components.CustomTextField
 import com.abhay.threddit.presentation.screens.authentication.AuthUiEvents
 import com.abhay.threddit.presentation.screens.authentication.AuthenticationViewModel
+import com.abhay.threddit.ui.theme.ThredditShadeFont
 import com.abhay.threddit.ui.theme.ThredditTheme
-import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel,
-    openAndPopUp: (Any, Any) -> Unit = { _, _ -> },
+    openScreen: (Any) -> Unit,
     popUp: () -> Unit
 ) {
     val state = viewModel.uiState.value
@@ -61,22 +68,26 @@ fun SignUpScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.SpaceAround
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+//            Spacer(modifier = Modifier.height(20.dp))
             Text(
                 modifier = Modifier.padding(vertical = 16.dp),
                 text = stringResource(R.string.create_your_account),
-                style = MaterialTheme.typography.displayLarge
+                style = MaterialTheme.typography.displayLarge,
+                fontFamily = ThredditShadeFont
             )
 
             EmailAndPasswordFields(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.9f),
                 email = state.email,
                 password = state.password,
                 onEvent = viewModel::onEvent,
                 onButtonClick = {
-                    viewModel.onEvent(AuthUiEvents.OnSignUpWithEmail(popUp))
+                    viewModel.onEvent(AuthUiEvents.OnSignUpWithEmail(openScreen = openScreen))
                 },
                 confirmPassword = state.confirmPassword,
                 passwordVisible = state.isPasswordVisible,
@@ -116,7 +127,6 @@ fun EmailAndPasswordFields(
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Email
@@ -130,7 +140,6 @@ fun EmailAndPasswordFields(
                 ),
             onEvent = onEvent,
             email = email,
-            textFieldColors = textFieldColors
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -148,10 +157,7 @@ fun EmailAndPasswordFields(
             },
             password = password,
             passwordVisible = passwordVisible,
-            textFieldColors = textFieldColors,
-            label = {
-                Text(text = stringResource(id = R.string.password))
-            },
+            label = stringResource(id = R.string.password),
             onPasswordVisibilityChange = {
                 onEvent(AuthUiEvents.OnPasswordVisibilityChange)
             })
@@ -170,22 +176,20 @@ fun EmailAndPasswordFields(
             },
             password = confirmPassword,
             passwordVisible = confirmPasswordVisible,
-            textFieldColors = textFieldColors,
-            label = {
-                Text(text = stringResource(R.string.confirm_password))
-            },
+            label =
+            stringResource(R.string.confirm_password),
             onPasswordVisibilityChange = {
                 onEvent(AuthUiEvents.OnConfirmPasswordVisibilityChange)
             })
 
-        val indicatorColor = if (!isSystemInDarkTheme()) Color.White else Color.DarkGray
+        val indicatorColor = if (isSystemInDarkTheme()) Color.White else Color.DarkGray
 
         Spacer(modifier = Modifier.height(12.dp))
         Button(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 10.dp)
-                .shadow(8.dp, shape = RoundedCornerShape(8.dp)),
+                .shadow(10.dp, shape = RoundedCornerShape(8.dp)),
             shape = RoundedCornerShape(8.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
             colors = ButtonDefaults.buttonColors(
@@ -213,14 +217,11 @@ fun EmailTextField(
     modifier: Modifier = Modifier,
     onEvent: (AuthUiEvents) -> Unit,
     email: String,
-    textFieldColors: TextFieldColors,
 ) {
-    TextField(
+    CustomTextField(
         value = email, onValueChange = {
             onEvent(AuthUiEvents.OnEmailChange(it))
-        }, modifier = modifier, label = {
-            Text(text = stringResource(id = R.string.email))
-        }, colors = textFieldColors
+        }, modifier = modifier, label = stringResource(id = R.string.email)
     )
 }
 
@@ -229,16 +230,15 @@ fun PasswordTextField(
     modifier: Modifier = Modifier,
     onValueChange: (String) -> Unit,
     password: String,
-    label: @Composable () -> Unit,
+    label: String,
     passwordVisible: Boolean,
-    textFieldColors: TextFieldColors,
     onPasswordVisibilityChange: () -> Unit
 ) {
-    TextField(value = password,
+    CustomTextField(
+        value = password,
         onValueChange = onValueChange,
         modifier = modifier,
         label = label,
-        colors = textFieldColors,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
 
@@ -273,8 +273,12 @@ private fun SignUpPrev() {
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
             SignUpScreen(viewModel = AuthenticationViewModel(
                 accountService = AccountServiceImpl(),
-                firebaseAuth = FirebaseAuth.getInstance()
-            ), openAndPopUp = { any: Any, any1: Any -> }, popUp = {})
+                firestoreService = FirestoreServiceImpl(
+                    db = Firebase.firestore,
+                    auth = Firebase.auth,
+                    storage = Firebase.storage
+                )
+            ), openScreen = { any: Any -> }, popUp = {})
         }
     }
 }

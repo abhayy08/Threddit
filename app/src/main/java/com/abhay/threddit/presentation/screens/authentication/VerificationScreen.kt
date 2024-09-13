@@ -25,14 +25,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhay.threddit.R
 import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
+import com.abhay.threddit.data.firebase.firestore.FirestoreServiceImpl
 import com.abhay.threddit.ui.theme.ThredditTheme
+import com.google.android.gms.auth.api.Auth
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 
 @Composable
 fun VerificationScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel,
     openAndPopUp: (Any, Any) -> Unit = { _, _ -> },
+    popUp: () -> Unit = {}
 ) {
 
     LaunchedEffect(Unit) {
@@ -41,6 +48,7 @@ fun VerificationScreen(
 
     BackHandler {
         viewModel.signOut()
+        popUp()
     }
 
     val state = viewModel.uiState.value
@@ -48,7 +56,7 @@ fun VerificationScreen(
     Surface(
         modifier = modifier
             .padding(8.dp)
-            .fillMaxWidth(), shape = RoundedCornerShape(8.dp)
+            .fillMaxWidth(0.9f), shape = RoundedCornerShape(8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -107,7 +115,15 @@ fun VerificationScreen(
 private fun VerificationScreenPreview() {
     ThredditTheme {
         VerificationScreen(
-            viewModel = AuthenticationViewModel(AccountServiceImpl(), firebaseAuth = FirebaseAuth.getInstance())
+            viewModel = AuthenticationViewModel(
+                accountService = AccountServiceImpl(),
+                firestoreService = FirestoreServiceImpl(
+                    db = Firebase.firestore,
+                    auth = Firebase.auth,
+                    storage = Firebase.storage
+                )
+            )
         )
+
     }
 }
