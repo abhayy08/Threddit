@@ -1,6 +1,9 @@
-package com.abhay.threddit.presentation.profile_screen
+package com.abhay.threddit.presentation.screens.profile.profile_screen
 
 import android.content.res.Configuration
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,15 +46,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.abhay.threddit.R
+import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
+import com.abhay.threddit.data.firebase.firestore.FirestoreServiceImpl
 import com.abhay.threddit.ui.theme.ThredditTheme
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     Surface(
         color = MaterialTheme.colorScheme.background
@@ -63,14 +72,89 @@ fun ProfileScreen(
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            UserInfo(
-                modifier = Modifier.fillMaxWidth(),
-                name = "Abhay",
-                username = "abhayy_08",
-                bio = "I am a software engineer"
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ){
+                UserInfo(
+                    modifier = Modifier.fillMaxWidth(),
+                    name = "Abhay",
+                    username = "abhayy_08",
+                    bio = "I am a software engineer"
+                )
+                EditAndShareButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(vertical = 12.dp),
+                )
+
+            }
             PostsAndComments(
                 modifier = Modifier.fillMaxSize(),
+            )
+        }
+    }
+}
+
+@Composable
+fun EditAndShareButton(
+    modifier: Modifier = Modifier,
+) {
+
+    val asd = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            if (uri != null) {
+                viewModel.uploadProfileImage(uri)
+            }
+        }
+    )
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Button(
+            modifier = Modifier
+                .weight(1f)
+                .wrapContentHeight()
+                .padding(horizontal = 2.dp),
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent
+            ),
+            onClick = {
+                asd.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
+        ) {
+            Text(
+                modifier = Modifier.padding(0.dp),
+                text = stringResource(R.string.edit_profile),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        Button(
+            modifier = Modifier
+                .weight(1f)
+                .wrapContentHeight()
+                .padding(horizontal = 2.dp),
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent
+            ),
+            onClick = { /*TODO*/ }
+        ) {
+            Text(
+                modifier = Modifier.padding(0.dp),
+                text = stringResource(R.string.share_profile),
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
@@ -204,55 +288,17 @@ fun UserInfo(
             )
 
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(
-                modifier = Modifier
-                    .weight(1f)
-                    .wrapContentHeight()
-                    .padding(horizontal = 2.dp),
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent
-                ),
-                onClick = { /*TODO*/ }
-            ) {
-                Text(
-                    modifier = Modifier.padding(0.dp),
-                    text = stringResource(R.string.edit_profile),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            Button(
-                modifier = Modifier
-                    .weight(1f)
-                    .wrapContentHeight()
-                    .padding(horizontal = 2.dp),
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent
-                ),
-                onClick = { /*TODO*/ }
-            ) {
-                Text(
-                    modifier = Modifier.padding(0.dp),
-                    text = stringResource(R.string.share_profile),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-
 
     }
 }
-
+val viewModel = ProfileViewModel(
+    accountService = AccountServiceImpl(),
+    firestoreService = FirestoreServiceImpl(
+        auth = Firebase.auth,
+        storage = Firebase.storage,
+        db = Firebase.firestore
+    )
+)
 
 @Preview(
     showBackground = true,
@@ -260,7 +306,8 @@ fun UserInfo(
 )
 @Composable
 private fun ProfilePreview() {
+
     ThredditTheme {
-        ProfileScreen()
+        ProfileScreen(viewModel =  viewModel)
     }
 }

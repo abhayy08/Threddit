@@ -18,7 +18,7 @@ sealed class Graphs {
         @Serializable
         data object VerificationDialog: Screen()
         @Serializable
-        data object AddDisplayNameDialog: Screen()
+        data object AddUserDetailsScreen: Screen()
     }
 
     // Main Graph

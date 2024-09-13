@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -51,16 +52,16 @@ import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
 
 @Composable
-fun ThredditApp() {
+fun ThredditApp(
+    viewModel: MainViewModel = hiltViewModel()
+) {
     ThredditTheme {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
             val navController = rememberNavController()
-            val isUserLoggedIn = Firebase.auth.currentUser != null
-//            val isUserLoggedIn = true
-            val startDest =
-                if (isUserLoggedIn) Graphs.MainNavGraph else Graphs.AuthGraph
+            val isUserLoggedIn = viewModel.isUserLoggedIn()
+            val startDest = viewModel.getStartDestination()
 
             val snackBarHostState = remember {
                 SnackbarHostState()
@@ -115,7 +116,10 @@ fun ThredditApp() {
                         .padding(innerPadding)
                         .windowInsetsPadding(WindowInsets.ime)
                 ) {
-                    RootNavGraph(navController = navController)
+                    RootNavGraph(
+                        navController = navController,
+                        areUserDetailsAdded = true
+                    )
                 }
 
             }

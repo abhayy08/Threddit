@@ -32,6 +32,11 @@ class MainActivity : ComponentActivity() {
             ThredditApp()
         }
     }
+
+    override fun onDestroy() {
+
+        super.onDestroy()
+    }
 }
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)

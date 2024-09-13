@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.storage.ktx)
 //    implementation(libs.androidx.ui.text.google.fonts)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -88,6 +89,9 @@ dependencies {
     // Firebase
     implementation(libs.firebase.auth)
     implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
+
+    // Firebase - Firestore
+    implementation("com.google.firebase:firebase-firestore")
 
     // Authentication with Credential Manager
     implementation("com.google.android.gms:play-services-auth:21.2.0")

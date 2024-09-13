@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.authentication.components
+package com.abhay.threddit.presentation.screens.authentication.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

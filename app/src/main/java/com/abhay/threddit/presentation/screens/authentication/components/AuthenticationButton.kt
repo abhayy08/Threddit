@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.authentication.components
+package com.abhay.threddit.presentation.screens.authentication.components
 
 import android.content.res.Configuration
 import android.util.Log

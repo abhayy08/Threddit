@@ -16,6 +16,14 @@ interface AccountService {
 
 
     suspend fun verifyUserAccount(email: String, password: String)
+    suspend fun createUserInFireStore(
+        name: String,
+        username: String,
+        email: String,
+        bio: String,
+    )
+
+    fun getUserFlow(): Flow<ThredditUser>
 
     suspend fun signOut()
     suspend fun deleteAccount()

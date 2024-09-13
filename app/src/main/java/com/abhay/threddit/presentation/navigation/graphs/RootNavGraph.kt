@@ -12,10 +12,14 @@ import androidx.navigation.compose.composable
 import com.abhay.threddit.presentation.common.SnackbarController
 
 fun NavGraphBuilder.RootNavGraph(
-    navController: NavHostController
+    navController: NavHostController,
+    areUserDetailsAdded: Boolean
 ) {
 
-    authNavGraph(navController = navController)
+    authNavGraph(
+        navController = navController,
+        areUserDetailsAdded = areUserDetailsAdded
+    )
 
     homeNavGraph(navController = navController)
 

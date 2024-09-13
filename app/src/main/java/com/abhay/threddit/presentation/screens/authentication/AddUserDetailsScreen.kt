@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.authentication
+package com.abhay.threddit.presentation.screens.authentication
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
@@ -6,18 +6,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,24 +24,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.abhay.threddit.R
-import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
 import com.abhay.threddit.ui.theme.ThredditTheme
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import kotlinx.coroutines.ThreadContextElement
 
 @Composable
-fun AddDisplayNameDialog(
+fun AddUserDetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthenticationViewModel,
     onOpenAndPopUp: (Any, Any) -> Unit = {_,_ -> }
 ) {
+
 
     BackHandler {
         viewModel.signOut()
@@ -69,19 +62,20 @@ fun AddDisplayNameDialog(
     Surface(
         modifier = modifier
             .padding(8.dp)
-            .height(170.dp)
             .fillMaxWidth(), shape = RoundedCornerShape(8.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(6.dp),
+                .padding(10.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            DisplayNameTextField(
+            CustomTextField(
                 name = viewModel.uiState.value.displayName,
-                onEvent = viewModel::onEvent,
+                onValueChange = {
+                    viewModel.onEvent(AuthUiEvents.OnDisplayNameChange(it))
+                },
                 textFieldColors = textFieldColors,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -90,6 +84,43 @@ fun AddDisplayNameDialog(
                         shape = RoundedCornerShape(8.dp),
                         color = MaterialTheme.colorScheme.onSecondary.copy(0.3f)
                     ),
+                label = "Name"
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            CustomTextField(
+                name = viewModel.uiState.value.username,
+                onValueChange = {
+                    viewModel.onEvent(AuthUiEvents.OnUsernameChange(it))
+                },
+                textFieldColors = textFieldColors,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        1.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.onSecondary.copy(0.3f)
+                    ),
+                label = "Username"
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            CustomTextField(
+                name = viewModel.uiState.value.bio,
+                onValueChange = {
+                    viewModel.onEvent(AuthUiEvents.OnBioChange(it))
+                },
+                textFieldColors = textFieldColors,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        1.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.onSecondary.copy(0.3f)
+                    ),
+                label = "Bio"
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -104,7 +135,7 @@ fun AddDisplayNameDialog(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondary
                 ),
-                onClick = { viewModel.onEvent(AuthUiEvents.SaveDisplayName(onOpenAndPopUp)) }
+                onClick = { viewModel.onEvent(AuthUiEvents.SaveUserDetails(onOpenAndPopUp)) }
             ) {
                 Text(text = "Save Name")
             }
@@ -113,17 +144,18 @@ fun AddDisplayNameDialog(
 }
 
 @Composable
-fun DisplayNameTextField(
+fun CustomTextField(
     modifier: Modifier = Modifier,
-    onEvent: (AuthUiEvents) -> Unit,
+    onValueChange: (String) -> Unit,
     name: String,
     textFieldColors: TextFieldColors,
+    label: String = "",
 ) {
     TextField(
         value = name, onValueChange = {
-            onEvent(AuthUiEvents.OnDisplayNameChange(it))
+            onValueChange(it)
         }, modifier = modifier, label = {
-            Text(text = stringResource(R.string.display_name))
+            Text(text = label)
         }, colors = textFieldColors
     )
 }
@@ -132,7 +164,7 @@ fun DisplayNameTextField(
 @Composable
 private fun asd() {
     ThredditTheme {
-        AddDisplayNameDialog(
+        AddUserDetailsScreen(
             viewModel = AuthenticationViewModel(
                 AccountServiceImpl(),
                 Firebase.auth

@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.authentication.sign_up
+package com.abhay.threddit.presentation.screens.authentication.sign_up
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -40,9 +40,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhay.threddit.R
-import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
-import com.abhay.threddit.presentation.authentication.AuthUiEvents
-import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
+import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
+import com.abhay.threddit.presentation.screens.authentication.AuthUiEvents
+import com.abhay.threddit.presentation.screens.authentication.AuthenticationViewModel
 import com.abhay.threddit.ui.theme.ThredditTheme
 import com.google.firebase.auth.FirebaseAuth
 

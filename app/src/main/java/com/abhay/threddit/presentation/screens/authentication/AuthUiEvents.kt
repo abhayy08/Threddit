@@ -1,7 +1,6 @@
-package com.abhay.threddit.presentation.authentication
+package com.abhay.threddit.presentation.screens.authentication
 
 import androidx.credentials.Credential
-import com.google.android.gms.auth.api.Auth
 
 sealed class AuthUiEvents {
 
@@ -21,13 +20,15 @@ sealed class AuthUiEvents {
     data object OnResendVerificationLink : AuthUiEvents()
 
     data class OnDisplayNameChange(val displayName: String): AuthUiEvents()
+    data class OnUsernameChange(val username: String): AuthUiEvents()
+    data class OnBioChange(val bio: String): AuthUiEvents()
 
     data class OnEmailChange(val email: String) : AuthUiEvents()
     data class OnPasswordChange(val password: String) : AuthUiEvents()
     data class OnConfirmPasswordChange(val confirmPassword: String) : AuthUiEvents()
     data object OnPasswordVisibilityChange : AuthUiEvents()
     data object OnConfirmPasswordVisibilityChange : AuthUiEvents()
-    data class SaveDisplayName(val openAndPopUp: (Any, Any) -> Unit) : AuthUiEvents()
+    data class SaveUserDetails(val openAndPopUp: (Any, Any) -> Unit) : AuthUiEvents()
 
 }
 

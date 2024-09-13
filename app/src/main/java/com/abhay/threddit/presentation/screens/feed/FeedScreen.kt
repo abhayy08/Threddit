@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.feed
+package com.abhay.threddit.presentation.screens.feed
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

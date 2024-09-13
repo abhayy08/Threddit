@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.authentication.log_in
+package com.abhay.threddit.presentation.screens.authentication.log_in
 
 import android.content.res.Configuration
 import androidx.compose.foundation.border
@@ -35,11 +35,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhay.threddit.R
-import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
-import com.abhay.threddit.presentation.authentication.AuthUiEvents
-import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
-import com.abhay.threddit.presentation.authentication.components.AuthenticationButton
-import com.abhay.threddit.presentation.authentication.components.OrDivider
+import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
+import com.abhay.threddit.presentation.screens.authentication.AuthUiEvents
+import com.abhay.threddit.presentation.screens.authentication.AuthenticationViewModel
+import com.abhay.threddit.presentation.screens.authentication.components.AuthenticationButton
+import com.abhay.threddit.presentation.screens.authentication.components.OrDivider
 import com.abhay.threddit.presentation.navigation.routes.Graphs
 import com.abhay.threddit.ui.theme.ThredditTheme
 import com.google.firebase.auth.FirebaseAuth
@@ -47,10 +47,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.onFocusChanged
 
 
 @Composable

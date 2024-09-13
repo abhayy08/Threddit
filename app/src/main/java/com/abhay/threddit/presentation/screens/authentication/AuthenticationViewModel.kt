@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.authentication
+package com.abhay.threddit.presentation.screens.authentication
 
 import android.util.Log
 import androidx.compose.material3.SnackbarDuration
@@ -60,7 +60,9 @@ class AuthenticationViewModel @Inject constructor(
             is AuthUiEvents.OnSignOut -> signOut()
             is AuthUiEvents.OnResendVerificationLink -> resendVerificationLink()
             is AuthUiEvents.OnDisplayNameChange -> updateDisplayName(event.displayName)
-            is AuthUiEvents.SaveDisplayName -> SaveDisplayName(event.openAndPopUp)
+            is AuthUiEvents.SaveUserDetails -> SaveUserDetails(event.openAndPopUp)
+            is AuthUiEvents.OnBioChange -> _uiState.value = _uiState.value.copy(bio = event.bio)
+            is AuthUiEvents.OnUsernameChange -> _uiState.value = _uiState.value.copy(username = event.username)
         }
     }
 
@@ -121,7 +123,7 @@ class AuthenticationViewModel @Inject constructor(
             if (newVerifiedStatus != _isEmailVerified.value) {
                 _isEmailVerified.value = newVerifiedStatus
                 if (_isEmailVerified.value) {
-                    openAndPopUp(Graphs.AuthGraph.AddDisplayNameDialog, Graphs.AuthGraph)
+                    openAndPopUp(Graphs.AuthGraph.AddUserDetailsScreen, Graphs.AuthGraph)
                     break
                 }
             }
@@ -129,9 +131,18 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
-    private fun SaveDisplayName(openAndPopUp: (Any, Any) -> Unit) {
+    private fun SaveUserDetails(openAndPopUp: (Any, Any) -> Unit) {
         launchCatching {
+
+            if(_uiState.value.displayName.isEmpty() || _uiState.value.username.isEmpty()) {
+                throw IllegalArgumentException("Name and Username cannot be empty")
+            }
+
             accountService.updateDisplayName(_uiState.value.displayName)
+            accountService.createUserInFireStore(
+                name = _uiState.value.displayName, username = _uiState.value.username, email = _uiState.value.email, bio = _uiState.value.bio
+
+            )
             openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
         }
     }
@@ -151,8 +162,8 @@ class AuthenticationViewModel @Inject constructor(
             if (!_isEmailVerified.value) {
                 accountService.verifyUserAccount(_uiState.value.email, _uiState.value.password)
                 openScreen(Graphs.AuthGraph.VerificationDialog)
-            } else if (!firebaseAuth.currentUser!!.displayName.isNullOrEmpty()) {
-                openScreen(Graphs.AuthGraph.AddDisplayNameDialog)
+            } else if (firebaseAuth.currentUser!!.displayName.isNullOrEmpty()) {
+                openScreen(Graphs.AuthGraph.AddUserDetailsScreen)
             } else {
                 openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
             }
@@ -184,7 +195,7 @@ class AuthenticationViewModel @Inject constructor(
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                 accountService.signInWithGoogle(googleIdTokenCredential.idToken)
                 if (firebaseAuth.currentUser!!.displayName.isNullOrEmpty()) {
-                    openScreen(Graphs.AuthGraph.AddDisplayNameDialog)
+                    openScreen(Graphs.AuthGraph.AddUserDetailsScreen)
                 } else {
                     openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
                 }

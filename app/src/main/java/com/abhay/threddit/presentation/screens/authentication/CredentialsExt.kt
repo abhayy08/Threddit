@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.authentication
+package com.abhay.threddit.presentation.screens.authentication
 
 import android.util.Patterns
 import java.util.regex.Pattern

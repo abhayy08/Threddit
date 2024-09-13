@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.search
+package com.abhay.threddit.presentation.screens.add_post
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,8 +9,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun SearchScreen(modifier: Modifier = Modifier) {
+fun AddPostScreen(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Search Screen", style = MaterialTheme.typography.displayLarge)
+        Text(text = "Add Post Screen", style = MaterialTheme.typography.displayLarge)
     }
 }

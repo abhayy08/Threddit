@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.authentication
+package com.abhay.threddit.presentation.screens.authentication
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhay.threddit.R
-import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
+import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
 import com.abhay.threddit.ui.theme.ThredditTheme
 import com.google.firebase.auth.FirebaseAuth
 
