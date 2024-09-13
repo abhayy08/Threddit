@@ -2,6 +2,7 @@ package com.abhay.threddit.presentation.authentication
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,7 +36,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.abhay.threddit.R
 import com.abhay.threddit.data.firebase_auth.AccountServiceImpl
 import com.abhay.threddit.ui.theme.ThredditTheme
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import kotlinx.coroutines.ThreadContextElement
 
 @Composable
@@ -82,7 +85,11 @@ fun AddDisplayNameDialog(
                 textFieldColors = textFieldColors,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
+                    .border(
+                        1.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.onSecondary.copy(0.3f)
+                    ),
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -128,7 +135,7 @@ private fun asd() {
         AddDisplayNameDialog(
             viewModel = AuthenticationViewModel(
                 AccountServiceImpl(),
-                FirebaseAuth.getInstance()
+                Firebase.auth
             )
         )
     }

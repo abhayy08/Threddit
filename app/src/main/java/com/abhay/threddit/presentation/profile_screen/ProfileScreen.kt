@@ -148,8 +148,7 @@ fun PostsAndComments(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = Firebase.auth.currentUser!!.displayName.toString() ?: "no name")
-//                Text(text = "Page $index")
+                Text(text = "Page $index")
             }
         }
     }
