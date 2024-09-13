@@ -17,7 +17,6 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -54,13 +53,17 @@ class AuthenticationViewModel @Inject constructor(
             is AuthUiEvents.OnSignUpWithEmail -> onSignUpWithEmail(event.popUp)
             is AuthUiEvents.OnSignInWithGoogle -> onSignInWithGoogle(
                 event.credential,
+                event.openScreen,
                 event.openAndPopUp
             )
 
-            AuthUiEvents.OnSignOut -> signOut()
-            AuthUiEvents.OnResendVerificationLink -> resendVerificationLink()
+            is AuthUiEvents.OnSignOut -> signOut()
+            is AuthUiEvents.OnResendVerificationLink -> resendVerificationLink()
+            is AuthUiEvents.OnDisplayNameChange -> updateDisplayName(event.displayName)
+            is AuthUiEvents.SaveDisplayName -> SaveDisplayName(event.openAndPopUp)
         }
     }
+
 
     // Update the email verification status of the user
     private fun updateEmailVerificationStatus() {
@@ -70,6 +73,10 @@ class AuthenticationViewModel @Inject constructor(
     }
 
     // Update functions
+    private fun updateDisplayName(displayName: String) {
+        _uiState.value = _uiState.value.copy(displayName = displayName)
+    }
+
     private fun updateEmail(email: String) {
         _uiState.value = _uiState.value.copy(email = email)
     }
@@ -114,11 +121,18 @@ class AuthenticationViewModel @Inject constructor(
             if (newVerifiedStatus != _isEmailVerified.value) {
                 _isEmailVerified.value = newVerifiedStatus
                 if (_isEmailVerified.value) {
-                    openAndPopUp(Graphs.MainNavGraph.Feed, Graphs.AuthGraph)
+                    openAndPopUp(Graphs.AuthGraph.AddDisplayNameDialog, Graphs.AuthGraph)
                     break
                 }
             }
             delay(3000)
+        }
+    }
+
+    private fun SaveDisplayName(openAndPopUp: (Any, Any) -> Unit) {
+        launchCatching {
+            accountService.updateDisplayName(_uiState.value.displayName)
+            openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
         }
     }
 
@@ -137,6 +151,8 @@ class AuthenticationViewModel @Inject constructor(
             if (!_isEmailVerified.value) {
                 accountService.verifyUserAccount(_uiState.value.email, _uiState.value.password)
                 openScreen(Graphs.AuthGraph.VerificationDialog)
+            } else if (!firebaseAuth.currentUser!!.displayName.isNullOrEmpty()) {
+                openScreen(Graphs.AuthGraph.AddDisplayNameDialog)
             } else {
                 openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
             }
@@ -149,7 +165,7 @@ class AuthenticationViewModel @Inject constructor(
             validateEmailForSignUp() // Validation helper
             updateLoadingStatus(true)
             accountService.signUpWithEmail(_uiState.value.email, _uiState.value.password)
-
+            accountService.updateDisplayName(_uiState.value.displayName)
             updateLoadingStatus(false)
             popUp()
             signOut() // Sign out the user after signup
@@ -158,12 +174,21 @@ class AuthenticationViewModel @Inject constructor(
     }
 
     // Handle sign-in with Google credentials
-    private fun onSignInWithGoogle(credential: Credential, openAndPopUp: (Any, Any) -> Unit) {
+    private fun onSignInWithGoogle(
+        credential: Credential,
+        openScreen: (Any) -> Unit,
+        openAndPopUp: (Any, Any) -> Unit
+    ) {
         launchCatching {
             if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                 accountService.signInWithGoogle(googleIdTokenCredential.idToken)
-                openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
+                if (firebaseAuth.currentUser!!.displayName.isNullOrEmpty()) {
+                    openScreen(Graphs.AuthGraph.AddDisplayNameDialog)
+                } else {
+                    openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
+                }
+
             } else {
                 Log.d("auth", "Unexpected Credential")
             }

@@ -1,6 +1,7 @@
 package com.abhay.threddit.presentation.authentication
 
 data class AuthScreenState(
+    val displayName: String = "",
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",

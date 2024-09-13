@@ -223,7 +223,7 @@ fun LogInScreen(
                 modifier = Modifier.fillMaxWidth(),
                 buttonText = R.string.sign_in_with_google
             ) { credential ->
-                viewModel.onEvent(AuthUiEvents.OnSignInWithGoogle(credential, openAndPopUp))
+                viewModel.onEvent(AuthUiEvents.OnSignInWithGoogle(credential, openScreen, openAndPopUp))
             }
         }
     }

@@ -46,6 +46,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhay.threddit.R
 import com.abhay.threddit.ui.theme.ThredditTheme
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 @Composable
 fun ProfileScreen(
@@ -146,7 +148,8 @@ fun PostsAndComments(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "Page $index")
+                Text(text = Firebase.auth.currentUser!!.displayName.toString() ?: "no name")
+//                Text(text = "Page $index")
             }
         }
     }

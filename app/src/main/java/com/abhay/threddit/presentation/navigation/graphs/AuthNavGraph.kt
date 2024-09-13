@@ -1,14 +1,14 @@
 package com.abhay.threddit.presentation.navigation.graphs
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.navigation
-import androidx.navigation.toRoute
+import com.abhay.threddit.presentation.authentication.AddDisplayNameDialog
 import com.abhay.threddit.presentation.authentication.AuthenticationViewModel
 import com.abhay.threddit.presentation.authentication.VerificationScreen
 import com.abhay.threddit.presentation.authentication.log_in.LogInScreen
@@ -22,10 +22,10 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
 
     navigation<Graphs.AuthGraph>(
         startDestination = Graphs.AuthGraph.LogInScreen,
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None },
-        popExitTransition = { ExitTransition.None },
-        popEnterTransition = { EnterTransition.None }
+        enterTransition = { slideInHorizontally { -it } },
+        exitTransition = { slideOutHorizontally { it } },
+        popEnterTransition = { slideInHorizontally { -it } },
+        popExitTransition = { slideOutHorizontally { it } },
     ) {
         composable<Graphs.AuthGraph.LogInScreen> {
             val viewModel =
@@ -54,6 +54,24 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
             )
         }
 
+        dialog<Graphs.AuthGraph.AddDisplayNameDialog>(
+            dialogProperties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = false,
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            val viewModel =
+                it.sharedViewModel<AuthenticationViewModel>(navController = navController)
+
+            AddDisplayNameDialog(
+                viewModel = viewModel,
+                onOpenAndPopUp = { route, popUp ->
+                    navController.navigateAndPopUp(route, popUp)
+                }
+            )
+        }
+
         dialog<Graphs.AuthGraph.VerificationDialog>(
             dialogProperties = DialogProperties(
                 dismissOnBackPress = true,
@@ -66,7 +84,7 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
 
             VerificationScreen(
                 viewModel = viewModel,
-                openAndPopUp = {route, popUp ->
+                openAndPopUp = { route, popUp ->
                     navController.navigateAndPopUp(route, popUp)
                 }
             )
