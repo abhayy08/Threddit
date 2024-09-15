@@ -15,6 +15,7 @@ import com.abhay.threddit.presentation.ThredditApp
 import com.abhay.threddit.ui.theme.BackgroundDark
 import com.abhay.threddit.ui.theme.BackgroundLight
 import com.abhay.threddit.ui.theme.ThredditTheme
+import com.google.firebase.FirebaseApp
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

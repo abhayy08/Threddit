@@ -21,6 +21,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.internal.toImmutableList
 import javax.inject.Inject
@@ -52,6 +55,27 @@ class FirestoreServiceImpl @Inject constructor(
             }
     }
 
+    override fun getUserFlow(): Flow<ThredditUser> = callbackFlow {
+        val userId = Firebase.auth.currentUser!!.uid
+
+        val listenerRegistration = Firebase.firestore.collection(USERS).document(userId)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.e("FirestoreService", "Error getting user data")
+                    close(e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val user = snapshot.toObject(ThredditUser::class.java)
+                    if (user != null) {
+                        trySend(user).isSuccess
+                    }
+                    Log.d("ThredditUser", user?.name ?: "Something not working")
+                }
+            }
+        awaitClose { listenerRegistration.remove() }
+    }
 
 
     override suspend fun getUserswithSameUsername(username: String): List<ThredditUser> {
@@ -79,27 +103,32 @@ class FirestoreServiceImpl @Inject constructor(
         email: String,
         dob: String,
         bio: String,
-        profilePicUrl: String?,
+        profilePicUrl: Uri?,
         followers: Int,
         following: Int
     ) {
         val db = Firebase.firestore
         val userId = Firebase.auth.currentUser!!.uid
+
         val userData = hashMapOf(
             USERID to userId,
             DISPLAY_NAME to name,
             USERNAME to username,
-            EMAIL to email,
             DOB to dob,
             BIO to bio,
-            PROFILE_PIC_URL to profilePicUrl,
+            PROFILE_PIC_URL to null,
             FOLLOWING to following,
             FOLLOWERS to followers
         )
 
         db.collection(USERS).document(userId)
             .set(userData)
-            .addOnSuccessListener { Log.d("FirestoreService", "User data successfully stored!") }
+            .addOnSuccessListener {
+                Log.d("FirestoreService", "User data successfully stored!")
+                profilePicUrl?.let {
+                    uploadProfileImage(it)
+                }
+            }
             .addOnFailureListener { e -> Log.w("FirestoreService", "Error storing user data", e) }
     }
 

@@ -1,6 +1,7 @@
 package com.abhay.threddit.presentation.screens.authentication.sign_up
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -26,9 +27,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -60,7 +58,11 @@ fun SignUpScreen(
     openScreen: (Any) -> Unit,
     popUp: () -> Unit
 ) {
-    val state = viewModel.uiState.value
+    val state = viewModel.authUiState.value
+
+    BackHandler {
+        viewModel.resetState()
+    }
 
     Surface(
         color = MaterialTheme.colorScheme.background
@@ -112,18 +114,6 @@ fun EmailAndPasswordFields(
 ) {
 
     val borderColor = if (isSystemInDarkTheme()) Color.LightGray else Color.DarkGray
-
-    val textFieldColors = TextFieldDefaults.colors(
-        focusedIndicatorColor = Color.Transparent,
-        unfocusedIndicatorColor = Color.Transparent,
-        disabledIndicatorColor = Color.Transparent,
-        errorIndicatorColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        focusedContainerColor = Color.Transparent,
-        focusedLabelColor = borderColor,
-        unfocusedLabelColor = borderColor.copy(0.7f),
-        cursorColor = borderColor
-    )
 
     Column(
         modifier = modifier,
@@ -189,7 +179,8 @@ fun EmailAndPasswordFields(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 10.dp)
-                .shadow(10.dp, shape = RoundedCornerShape(8.dp)),
+                .height(45.dp)
+                .shadow(8.dp, shape = RoundedCornerShape(8.dp)),
             shape = RoundedCornerShape(8.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
             colors = ButtonDefaults.buttonColors(

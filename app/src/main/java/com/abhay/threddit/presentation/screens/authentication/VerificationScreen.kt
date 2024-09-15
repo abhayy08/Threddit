@@ -27,9 +27,7 @@ import com.abhay.threddit.R
 import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
 import com.abhay.threddit.data.firebase.firestore.FirestoreServiceImpl
 import com.abhay.threddit.ui.theme.ThredditTheme
-import com.google.android.gms.auth.api.Auth
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
@@ -51,7 +49,7 @@ fun VerificationScreen(
         popUp()
     }
 
-    val state = viewModel.uiState.value
+    val state = viewModel.authUiState.value
 
     Surface(
         modifier = modifier
@@ -79,7 +77,12 @@ fun VerificationScreen(
 
             Text(
                 modifier = Modifier.padding(vertical = 12.dp),
-                text = stringResource(R.string.we_ve_sent_a_verification_email_to, state.email),
+                text = stringResource(R.string.we_ve_sent_a_verification_email_to),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Text(
+                modifier = Modifier.padding(bottom = 12.dp),
+                text = state.email,
                 style = MaterialTheme.typography.bodySmall
             )
             Text(

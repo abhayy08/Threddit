@@ -63,13 +63,15 @@ fun NavGraphBuilder.authNavGraph(
                 it.sharedViewModel<AuthenticationViewModel>(navController = navController)
 
             AddUserDetailsScreen(
-                viewModel = viewModel,
+                state = viewModel.userDetailState.value,
                 onOpenAndPopUp = { route, popUp ->
                     navController.navigateAndPopUp(route, popUp)
                 },
                 popUp = {
                     navController.popUp()
-                }
+                },
+                onSignOut = { viewModel.signOut() },
+                onEvent = viewModel::onEvent
             )
         }
 

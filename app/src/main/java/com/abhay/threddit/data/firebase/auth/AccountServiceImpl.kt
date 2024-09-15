@@ -49,28 +49,6 @@ class AccountServiceImpl @Inject constructor(
         Firebase.auth.currentUser?.sendEmailVerification()?.await()
     }
 
-    override fun getUserFlow(): Flow<ThredditUser> = callbackFlow {
-        val userId = Firebase.auth.currentUser!!.uid
-
-        val listenerRegistration = Firebase.firestore.collection(USERS).document(userId)
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.e("FirestoreService", "Error getting user data")
-                    close(e)
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null) {
-                    val user = snapshot.toObject(ThredditUser::class.java)
-                    if (user != null) {
-                        trySend(user).isSuccess
-                    }
-                    Log.d("ThredditUser", user?.name ?: "Something not working")
-                }
-            }
-        awaitClose { listenerRegistration.remove() }
-    }
-
 
     // Observe the current Firebase user with Flow
     override val currentUser: Flow<FirebaseUser?>

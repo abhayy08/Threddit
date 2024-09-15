@@ -1,6 +1,7 @@
 package com.abhay.threddit.domain
 
 import android.net.Uri
+import kotlinx.coroutines.flow.Flow
 
 interface FirestoreService {
 
@@ -15,8 +16,10 @@ interface FirestoreService {
         email: String,
         dob: String,
         bio: String,
-        profilePicUrl: String?,
+        profilePicUrl: Uri?,
         followers: Int,
         following: Int
     )
+
+    fun getUserFlow(): Flow<ThredditUser>
 }

@@ -1,10 +1,10 @@
 package com.abhay.threddit.presentation.screens.authentication
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.text.font.emptyCacheFontFamilyResolver
 import androidx.credentials.Credential
 import androidx.credentials.CustomCredential
 import androidx.lifecycle.ViewModel
@@ -15,6 +15,7 @@ import com.abhay.threddit.domain.ThredditUser
 import com.abhay.threddit.presentation.common.SnackbarController
 import com.abhay.threddit.presentation.common.SnackbarEvent
 import com.abhay.threddit.presentation.navigation.routes.Graphs
+import com.abhay.threddit.presentation.screens.authentication.add_user_details.UserDetailsState
 import com.abhay.threddit.utils.ERROR_TAG
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
@@ -34,8 +35,11 @@ class AuthenticationViewModel @Inject constructor(
     private val firestoreService: FirestoreService
 ) : ViewModel() {
 
-    private val _uiState = mutableStateOf(AuthScreenState())
-    val uiState: State<AuthScreenState> = _uiState
+    private val _authUiState = mutableStateOf(AuthScreenState())
+    val authUiState: State<AuthScreenState> = _authUiState
+
+    private val _userDetailState = mutableStateOf(UserDetailsState())
+    val userDetailState: State<UserDetailsState> = _userDetailState
 
     private val _isEmailVerified = MutableStateFlow(false)
 
@@ -66,10 +70,17 @@ class AuthenticationViewModel @Inject constructor(
 
             is AuthUiEvents.OnDisplayNameChange -> updateDisplayName(event.displayName)
             is AuthUiEvents.SaveUserDetails -> saveUserDetails(event.openAndPopUp)
-            is AuthUiEvents.OnBioChange -> _uiState.value = _uiState.value.copy(bio = event.bio)
+            is AuthUiEvents.OnBioChange -> _userDetailState.value = _userDetailState.value.copy(bio = event.bio)
             is AuthUiEvents.OnUsernameChange -> updateUsername(event.username)
             is AuthUiEvents.OnDOBChange -> updateDob(event.dob)
+            is AuthUiEvents.OnAddImageClick -> addProfilePic(event.uri)
         }
+    }
+
+    // Adding UserProfile Pic
+    private fun addProfilePic(imageUri: Uri) {
+//        firestoreService.uploadProfileImage(imageUri = imageUri)
+        _userDetailState.value = _userDetailState.value.copy(profilePicUri = imageUri)
     }
 
 
@@ -81,9 +92,8 @@ class AuthenticationViewModel @Inject constructor(
     }
 
     // Update functions
-
     private fun updateDob(dob: String) {
-        _uiState.value = _uiState.value.copy(dob = dob, dobError = false)
+        _userDetailState.value = _userDetailState.value.copy(dob = dob, dobError = false)
     }
 
     private var debounceJob: Job? = null
@@ -93,7 +103,7 @@ class AuthenticationViewModel @Inject constructor(
         debounceJob?.cancel()
 
         // Immediately update the UI with the current input
-        _uiState.value = _uiState.value.copy(username = username, usernameError = false)
+        _userDetailState.value = _userDetailState.value.copy(username = username, usernameError = false)
 
         // Debounce the check to avoid firing too many Firestore queries
         debounceJob = viewModelScope.launch {
@@ -101,7 +111,7 @@ class AuthenticationViewModel @Inject constructor(
 
             // Now check for the uniqueness of the username
             launchCatching {
-                _uiState.value = _uiState.value.copy(
+                _userDetailState.value = _userDetailState.value.copy(
                     checkingUsernameUniqueness = true
                 )
                 usersWithSameUsername = firestoreService.getUserswithSameUsername(username)
@@ -110,9 +120,9 @@ class AuthenticationViewModel @Inject constructor(
 
                 // Update the UI based on whether the username is unique
                 if (usersWithSameUsername.isNotEmpty()) {
-                    _uiState.value = _uiState.value.copy(usernameError = true, checkingUsernameUniqueness = false)
+                    _userDetailState.value = _userDetailState.value.copy(usernameError = true, checkingUsernameUniqueness = false)
                 } else {
-                    _uiState.value = _uiState.value.copy(usernameError = false, checkingUsernameUniqueness = false)
+                    _userDetailState.value = _userDetailState.value.copy(usernameError = false, checkingUsernameUniqueness = false)
                 }
 
             }
@@ -120,35 +130,35 @@ class AuthenticationViewModel @Inject constructor(
     }
 
     private fun updateDisplayName(displayName: String) {
-        _uiState.value = _uiState.value.copy(
+        _userDetailState.value = _userDetailState.value.copy(
             displayName = displayName,
             nameError = false
         )
     }
 
     private fun updateEmail(email: String) {
-        _uiState.value = _uiState.value.copy(email = email)
+        _authUiState.value = _authUiState.value.copy(email = email)
     }
 
     private fun updateLoadingStatus(isLoading: Boolean) {
-        _uiState.value = _uiState.value.copy(isLoading = isLoading)
+        _authUiState.value = _authUiState.value.copy(isLoading = isLoading)
     }
 
     private fun updatePassword(password: String) {
-        _uiState.value = _uiState.value.copy(password = password)
+        _authUiState.value = _authUiState.value.copy(password = password)
     }
 
     private fun updateConfirmPassword(confirmPassword: String) {
-        _uiState.value = _uiState.value.copy(confirmPassword = confirmPassword)
+        _authUiState.value = _authUiState.value.copy(confirmPassword = confirmPassword)
     }
 
     private fun togglePasswordVisibility() {
-        _uiState.value = _uiState.value.copy(isPasswordVisible = !_uiState.value.isPasswordVisible)
+        _authUiState.value = _authUiState.value.copy(isPasswordVisible = !_authUiState.value.isPasswordVisible)
     }
 
     private fun toggleConfirmPasswordVisibility() {
-        _uiState.value =
-            _uiState.value.copy(isConfirmPasswordVisible = !_uiState.value.isConfirmPasswordVisible)
+        _authUiState.value =
+            _authUiState.value.copy(isConfirmPasswordVisible = !_authUiState.value.isConfirmPasswordVisible)
     }
 
     // Observe email verification status
@@ -181,27 +191,27 @@ class AuthenticationViewModel @Inject constructor(
     private fun saveUserDetails(openAndPopUp: (Any, Any) -> Unit) {
         launchCatching {
 
-            if (_uiState.value.displayName.isEmpty() || _uiState.value.username.isEmpty() || _uiState.value.dob.isEmpty()) {
-                _uiState.value = _uiState.value.copy(
-                    usernameError = _uiState.value.username.isEmpty(),
-                    nameError = _uiState.value.displayName.isEmpty(),
-                    dobError = _uiState.value.dob.isEmpty(),
+            if (_userDetailState.value.displayName.isEmpty() || _userDetailState.value.username.isEmpty() || _userDetailState.value.dob.isEmpty()) {
+                _userDetailState.value = _userDetailState.value.copy(
+                    usernameError = _userDetailState.value.username.isEmpty(),
+                    nameError = _userDetailState.value.displayName.isEmpty(),
+                    dobError = _userDetailState.value.dob.isEmpty(),
                 )
                 throw IllegalArgumentException("Fields cannot be empty cannot be empty")
             }
-            if(_uiState.value.usernameError) {
+            if(_userDetailState.value.usernameError) {
                 throw IllegalArgumentException("Username should be unique")
             }
 
-            accountService.updateDisplayName(_uiState.value.displayName)
+            accountService.updateDisplayName(_userDetailState.value.displayName)
             firestoreService.createUserInFireStore(
-                name = _uiState.value.displayName,
-                username = _uiState.value.username,
-                email = _uiState.value.email,
-                bio = _uiState.value.bio,
+                name = _userDetailState.value.displayName,
+                username = _userDetailState.value.username,
+                email = _userDetailState.value.email,
+                bio = _userDetailState.value.bio,
                 userId = accountService.currentUserId,
-                dob = _uiState.value.dob,
-                profilePicUrl = null,
+                dob = _userDetailState.value.dob,
+                profilePicUrl = _userDetailState.value.profilePicUri,
                 followers = 0,
                 following = 0
 
@@ -217,13 +227,13 @@ class AuthenticationViewModel @Inject constructor(
 
             updateLoadingStatus(true)
 
-            accountService.signInWithEmail(_uiState.value.email, _uiState.value.password)
+            accountService.signInWithEmail(_authUiState.value.email, _authUiState.value.password)
             updateEmailVerificationStatus()
 
             updateLoadingStatus(false)
 
             if (!_isEmailVerified.value) {
-                accountService.verifyUserAccount(_uiState.value.email, _uiState.value.password)
+                accountService.verifyUserAccount(_authUiState.value.email, _authUiState.value.password)
                 openScreen(Graphs.AuthGraph.VerificationDialog)
             } else if (accountService.getFirebaseUser()!!.displayName.isNullOrEmpty()) {
                 openScreen(Graphs.AuthGraph.AddUserDetailsScreen)
@@ -238,12 +248,15 @@ class AuthenticationViewModel @Inject constructor(
         launchCatching {
             validateEmailForSignUp() // Validation helper
             updateLoadingStatus(true)
-            accountService.signUpWithEmail(_uiState.value.email, _uiState.value.password)
-            accountService.updateDisplayName(_uiState.value.displayName)
+            accountService.signUpWithEmail(_authUiState.value.email, _authUiState.value.password)
+//            accountService.updateDisplayName(_uiState.value.displayName)
             updateLoadingStatus(false)
             sendSnackbarMessage("Account Created!")
             openScreen(Graphs.AuthGraph.VerificationDialog)
 //            signOut() // Sign out the user after signup
+            _userDetailState.value = _userDetailState.value.copy(
+                email = _authUiState.value.email
+            )
         }
     }
 
@@ -262,10 +275,9 @@ class AuthenticationViewModel @Inject constructor(
 
                 openScreen(Graphs.AuthGraph.AddUserDetailsScreen)
 
-                _uiState.value = _uiState.value.copy(
-                    displayName = currentUser?.displayName ?: "",
-                    email = currentUser?.email ?: "",
-
+                _userDetailState.value = _userDetailState.value.copy(
+                    displayName = currentUser!!.displayName ?: "",
+                    email = currentUser.email ?: ""
                 )
 
 //                openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
@@ -279,7 +291,7 @@ class AuthenticationViewModel @Inject constructor(
     // Helper function to resend verification link
     private fun resendVerificationLink() {
         launchCatching {
-            accountService.verifyUserAccount(_uiState.value.email, _uiState.value.password)
+            accountService.verifyUserAccount(_authUiState.value.email, _authUiState.value.password)
         }
     }
 
@@ -292,18 +304,18 @@ class AuthenticationViewModel @Inject constructor(
 
     // Reset the UI state
     fun resetState() {
-        _uiState.value = AuthScreenState()
+        _authUiState.value = AuthScreenState()
     }
 
     // Validation for login and sign-up
     private fun validateEmailAndPassword() {
-        if (_uiState.value.email.isBlank()) throw IllegalArgumentException("Email cannot be blank")
-        if (_uiState.value.password.isBlank()) throw IllegalArgumentException("Password cannot be blank")
+        if (_authUiState.value.email.isBlank()) throw IllegalArgumentException("Email cannot be blank")
+        if (_authUiState.value.password.isBlank()) throw IllegalArgumentException("Password cannot be blank")
     }
 
     private fun validateEmailForSignUp() {
-        if (!_uiState.value.email.isValidEmail()) throw IllegalArgumentException("Invalid Email " + _uiState.value.email)
-        if (_uiState.value.password != _uiState.value.confirmPassword) throw IllegalArgumentException(
+        if (!_authUiState.value.email.isValidEmail()) throw IllegalArgumentException("Invalid Email " + _authUiState.value.email)
+        if (_authUiState.value.password != _authUiState.value.confirmPassword) throw IllegalArgumentException(
             "Passwords do not match"
         )
     }

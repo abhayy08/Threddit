@@ -22,8 +22,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,9 +40,7 @@ import com.abhay.threddit.presentation.screens.authentication.components.Authent
 import com.abhay.threddit.presentation.screens.authentication.components.OrDivider
 import com.abhay.threddit.presentation.navigation.routes.Graphs
 import com.abhay.threddit.ui.theme.ThredditTheme
-import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonDefaults
@@ -52,9 +48,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.draw.shadow
 import com.abhay.threddit.data.firebase.firestore.FirestoreServiceImpl
 import com.abhay.threddit.presentation.components.CustomTextField
-import com.abhay.threddit.ui.theme.ThredditInlineFont
-import com.abhay.threddit.ui.theme.ThredditOutlineFont
-import com.abhay.threddit.ui.theme.ThredditRegularFont
 import com.abhay.threddit.ui.theme.ThredditShadeFont
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -70,7 +63,7 @@ fun LogInScreen(
     openScreen: (Any) -> Unit
 ) {
 
-    val state = viewModel.uiState.value
+    val state = viewModel.authUiState.value
 
     val passwordVisible = state.isPasswordVisible
 
@@ -183,7 +176,8 @@ fun LogInScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 10.dp)
-                        .shadow(10.dp, shape = RoundedCornerShape(8.dp)),
+                        .height(45.dp)
+                        .shadow(8.dp, shape = RoundedCornerShape(8.dp)),
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
                     colors = ButtonDefaults.buttonColors(

@@ -52,7 +52,6 @@ import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
 import com.abhay.threddit.data.firebase.firestore.FirestoreServiceImpl
 import com.abhay.threddit.ui.theme.ThredditTheme
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
@@ -88,6 +87,7 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .padding(vertical = 12.dp),
+                    viewModel = viewModel
                 )
 
             }
@@ -101,9 +101,10 @@ fun ProfileScreen(
 @Composable
 fun EditAndShareButton(
     modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel,
 ) {
 
-    val asd = rememberLauncherForActivityResult(
+    val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             if (uri != null) {
@@ -128,7 +129,7 @@ fun EditAndShareButton(
                 containerColor = Color.Transparent
             ),
             onClick = {
-                asd.launch(
+                imagePickerLauncher.launch(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                 )
             }
@@ -291,14 +292,6 @@ fun UserInfo(
 
     }
 }
-val viewModel = ProfileViewModel(
-    accountService = AccountServiceImpl(),
-    firestoreService = FirestoreServiceImpl(
-        auth = Firebase.auth,
-        storage = Firebase.storage,
-        db = Firebase.firestore
-    )
-)
 
 @Preview(
     showBackground = true,
@@ -306,8 +299,7 @@ val viewModel = ProfileViewModel(
 )
 @Composable
 private fun ProfilePreview() {
-
-    ThredditTheme {
-        ProfileScreen(viewModel =  viewModel)
-    }
+//    ThredditTheme {
+//        ProfileScreen(viewModel =  ProfileViewModel(accountService = AccountServiceImpl()))
+//    }
 }

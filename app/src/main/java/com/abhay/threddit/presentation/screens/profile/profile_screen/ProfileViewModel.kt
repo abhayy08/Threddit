@@ -13,7 +13,7 @@ class ProfileViewModel @Inject constructor(
     private val firestoreService: FirestoreService
 ): ViewModel() {
 
-    val user = accountService.getUserFlow()
+    val user = firestoreService.getUserFlow()
 
     fun updateProfileChanges() {
 
