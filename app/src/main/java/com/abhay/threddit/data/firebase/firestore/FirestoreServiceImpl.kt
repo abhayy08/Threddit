@@ -55,26 +55,35 @@ class FirestoreServiceImpl @Inject constructor(
             }
     }
 
-    override fun getUserFlow(): Flow<ThredditUser> = callbackFlow {
-        val userId = Firebase.auth.currentUser!!.uid
+    override fun getUserFlow(): Flow<ThredditUser?> = callbackFlow {
+        val userId = Firebase.auth.currentUser?.uid
 
-        val listenerRegistration = Firebase.firestore.collection(USERS).document(userId)
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    Log.e("FirestoreService", "Error getting user data")
-                    close(e)
-                    return@addSnapshotListener
-                }
+            val listenerRegistration = userId?.let {
+                Firebase.firestore.collection(USERS).document(it)
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            Log.e("FirestoreService", "Error getting user data")
+                            close(e)
+                            return@addSnapshotListener
+                        }
 
-                if (snapshot != null) {
-                    val user = snapshot.toObject(ThredditUser::class.java)
-                    if (user != null) {
-                        trySend(user).isSuccess
+                        if (snapshot != null && snapshot.exists()) {
+                            val user = snapshot.toObject(ThredditUser::class.java)
+                            if (user != null) {
+                                trySend(user).isSuccess
+                            }
+                            Log.d("ThredditUser", user?.name ?: "Something not working")
+                        }else{
+                            trySend(null).isSuccess
+                            Log.d("ThredditUser", "No user found with the given userId")
+                        }
                     }
-                    Log.d("ThredditUser", user?.name ?: "Something not working")
-                }
             }
-        awaitClose { listenerRegistration.remove() }
+
+
+        awaitClose {
+            listenerRegistration?.remove()
+        }
     }
 
 
@@ -118,7 +127,8 @@ class FirestoreServiceImpl @Inject constructor(
             BIO to bio,
             PROFILE_PIC_URL to null,
             FOLLOWING to following,
-            FOLLOWERS to followers
+            FOLLOWERS to followers,
+            "isUserRegistered" to true
         )
 
         db.collection(USERS).document(userId)

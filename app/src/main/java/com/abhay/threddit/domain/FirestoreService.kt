@@ -21,5 +21,5 @@ interface FirestoreService {
         following: Int
     )
 
-    fun getUserFlow(): Flow<ThredditUser>
+    fun getUserFlow(): Flow<ThredditUser?>
 }

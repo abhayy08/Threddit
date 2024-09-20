@@ -2,6 +2,7 @@ package com.abhay.threddit.presentation.navigation.graphs
 
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -63,12 +64,13 @@ fun NavGraphBuilder.authNavGraph(
                 it.sharedViewModel<AuthenticationViewModel>(navController = navController)
 
             AddUserDetailsScreen(
-                state = viewModel.userDetailState.value,
+                state = viewModel.userDetailState.collectAsState().value,
                 onOpenAndPopUp = { route, popUp ->
                     navController.navigateAndPopUp(route, popUp)
                 },
                 popUp = {
                     navController.popUp()
+                    viewModel.resetState()
                 },
                 onSignOut = { viewModel.signOut() },
                 onEvent = viewModel::onEvent

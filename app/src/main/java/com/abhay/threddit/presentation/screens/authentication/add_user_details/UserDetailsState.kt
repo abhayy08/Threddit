@@ -14,5 +14,4 @@ data class UserDetailsState(
     val nameError: Boolean = false,
     val dobError: Boolean = false,
     val profilePicUri: Uri? = null
-
 )

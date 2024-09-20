@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.draw.shadow
 import com.abhay.threddit.data.firebase.firestore.FirestoreServiceImpl
 import com.abhay.threddit.presentation.components.CustomTextField
@@ -63,7 +64,7 @@ fun LogInScreen(
     openScreen: (Any) -> Unit
 ) {
 
-    val state = viewModel.authUiState.value
+    val state = viewModel.authUiState.collectAsState().value
 
     val passwordVisible = state.isPasswordVisible
 
@@ -90,7 +91,8 @@ fun LogInScreen(
 
             //Email
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .fillMaxHeight(0.9f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

@@ -26,6 +26,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,15 +38,47 @@ class AuthenticationViewModel @Inject constructor(
     private val firestoreService: FirestoreService
 ) : ViewModel() {
 
-    private val _authUiState = mutableStateOf(AuthScreenState())
-    val authUiState: State<AuthScreenState> = _authUiState
+    private val _authUiState = MutableStateFlow(AuthScreenState())
+    val authUiState: StateFlow<AuthScreenState> = _authUiState.asStateFlow()
 
-    private val _userDetailState = mutableStateOf(UserDetailsState())
-    val userDetailState: State<UserDetailsState> = _userDetailState
+    private val _userDetailState = MutableStateFlow(UserDetailsState())
+    val userDetailState: StateFlow<UserDetailsState> = _userDetailState.asStateFlow()
 
     private val _isEmailVerified = MutableStateFlow(false)
 
     private var usersWithSameUsername: List<ThredditUser> = emptyList()
+
+    private var thredditUser: ThredditUser? = null
+
+    init {
+        collectThredditUser()
+    }
+
+
+    /*
+    CHANGE TO USING STATEFLOW FOR UI STATE MANAGEMENT
+    CHANGE UPDATING STATE LIKE FOLLOWS
+
+    _userDetailState.value = _userDetailState.value.copy(profilePicUri = imageUri)
+
+    TO
+
+    _userDetailState.update{
+        it.copy(
+            profilePicUri = imageUri
+        )
+    }
+
+     */
+
+
+    private fun collectThredditUser() {
+        viewModelScope.launch {
+            firestoreService.getUserFlow().collect { user ->
+                thredditUser = user
+            }
+        }
+    }
 
     // Handle UI Events
     fun onEvent(event: AuthUiEvents) {
@@ -51,26 +86,20 @@ class AuthenticationViewModel @Inject constructor(
             is AuthUiEvents.OnEmailChange -> updateEmail(event.email)
             is AuthUiEvents.OnPasswordChange -> updatePassword(event.password)
             is AuthUiEvents.OnConfirmPasswordChange -> updateConfirmPassword(event.confirmPassword)
-            AuthUiEvents.OnPasswordVisibilityChange -> togglePasswordVisibility()
-            AuthUiEvents.OnConfirmPasswordVisibilityChange -> toggleConfirmPasswordVisibility()
-            is AuthUiEvents.OnLogInWithEmail -> onLogInWithEmail(
-                event.openAndPopUp,
-                event.openScreen
-            )
+            is AuthUiEvents.OnPasswordVisibilityChange -> toggleVisibility(VisibilityType.PASSWORD)
+            is AuthUiEvents.OnConfirmPasswordVisibilityChange -> toggleVisibility(VisibilityType.CONFIRM_PASSWORD)
+            is AuthUiEvents.OnLogInWithEmail -> onLogInWithEmail(event.openAndPopUp, event.openScreen)
 
             is AuthUiEvents.OnSignUpWithEmail -> onSignUpWithEmail(event.openScreen)
-            is AuthUiEvents.OnSignInWithGoogle -> onSignInWithGoogle(
-                event.credential,
-                event.openScreen,
-                event.openAndPopUp
-            )
+            is AuthUiEvents.OnSignInWithGoogle -> onSignInWithGoogle(event.credential, event.openScreen, event.openAndPopUp)
 
             is AuthUiEvents.OnSignOut -> signOut()
             is AuthUiEvents.OnResendVerificationLink -> resendVerificationLink()
 
             is AuthUiEvents.OnDisplayNameChange -> updateDisplayName(event.displayName)
             is AuthUiEvents.SaveUserDetails -> saveUserDetails(event.openAndPopUp)
-            is AuthUiEvents.OnBioChange -> _userDetailState.value = _userDetailState.value.copy(bio = event.bio)
+            is AuthUiEvents.OnBioChange -> _userDetailState.update { it.copy(bio = event.bio) }
+
             is AuthUiEvents.OnUsernameChange -> updateUsername(event.username)
             is AuthUiEvents.OnDOBChange -> updateDob(event.dob)
             is AuthUiEvents.OnAddImageClick -> addProfilePic(event.uri)
@@ -80,7 +109,7 @@ class AuthenticationViewModel @Inject constructor(
     // Adding UserProfile Pic
     private fun addProfilePic(imageUri: Uri) {
 //        firestoreService.uploadProfileImage(imageUri = imageUri)
-        _userDetailState.value = _userDetailState.value.copy(profilePicUri = imageUri)
+        _userDetailState.update { it.copy(profilePicUri = imageUri) }
     }
 
 
@@ -93,7 +122,7 @@ class AuthenticationViewModel @Inject constructor(
 
     // Update functions
     private fun updateDob(dob: String) {
-        _userDetailState.value = _userDetailState.value.copy(dob = dob, dobError = false)
+        _userDetailState.update { it.copy(dob = dob, dobError = false) }
     }
 
     private var debounceJob: Job? = null
@@ -103,63 +132,67 @@ class AuthenticationViewModel @Inject constructor(
         debounceJob?.cancel()
 
         // Immediately update the UI with the current input
-        _userDetailState.value = _userDetailState.value.copy(username = username, usernameError = false)
+        _userDetailState.update {
+            it.copy(
+                username = username,
+                usernameError = false
+            )
+        }
 
-        // Debounce the check to avoid firing too many Firestore queries
+        // Debounce the Firestore query
         debounceJob = viewModelScope.launch {
             delay(300) // Debounce delay (300ms)
 
             // Now check for the uniqueness of the username
-            launchCatching {
-                _userDetailState.value = _userDetailState.value.copy(
-                    checkingUsernameUniqueness = true
+            _userDetailState.update { it.copy(checkingUsernameUniqueness = true) }
+
+            val isUsernameTaken = runCatching {
+                firestoreService.getUserswithSameUsername(username).isNotEmpty()
+            }.getOrDefault(false)
+
+            // Update the UI based on whether the username is unique
+            _userDetailState.update {
+                it.copy(
+                    usernameError = isUsernameTaken,
+                    checkingUsernameUniqueness = false
                 )
-                usersWithSameUsername = firestoreService.getUserswithSameUsername(username)
-                Log.d("UsersWithSameUsername: ", usersWithSameUsername.toString())
-
-
-                // Update the UI based on whether the username is unique
-                if (usersWithSameUsername.isNotEmpty()) {
-                    _userDetailState.value = _userDetailState.value.copy(usernameError = true, checkingUsernameUniqueness = false)
-                } else {
-                    _userDetailState.value = _userDetailState.value.copy(usernameError = false, checkingUsernameUniqueness = false)
-                }
-
             }
         }
     }
 
+
     private fun updateDisplayName(displayName: String) {
-        _userDetailState.value = _userDetailState.value.copy(
-            displayName = displayName,
-            nameError = false
-        )
+        _userDetailState.update {
+            it.copy(
+                displayName = displayName,
+                nameError = false
+            )
+        }
     }
 
     private fun updateEmail(email: String) {
-        _authUiState.value = _authUiState.value.copy(email = email)
+        _authUiState.update { it.copy(email = email) }
     }
 
     private fun updateLoadingStatus(isLoading: Boolean) {
-        _authUiState.value = _authUiState.value.copy(isLoading = isLoading)
+        _authUiState.update { it.copy(isLoading = isLoading) }
     }
 
     private fun updatePassword(password: String) {
-        _authUiState.value = _authUiState.value.copy(password = password)
+        _authUiState.update { it.copy(password = password) }
     }
 
     private fun updateConfirmPassword(confirmPassword: String) {
-        _authUiState.value = _authUiState.value.copy(confirmPassword = confirmPassword)
+        _authUiState.update { it.copy(confirmPassword = confirmPassword) }
     }
 
-    private fun togglePasswordVisibility() {
-        _authUiState.value = _authUiState.value.copy(isPasswordVisible = !_authUiState.value.isPasswordVisible)
+    private fun toggleVisibility(type: VisibilityType) {
+        when (type) {
+            VisibilityType.PASSWORD -> _authUiState.update { it.copy(isPasswordVisible = !_authUiState.value.isPasswordVisible) }
+            VisibilityType.CONFIRM_PASSWORD -> _authUiState.update { it.copy(isConfirmPasswordVisible = !_authUiState.value.isConfirmPasswordVisible) }
+        }
     }
 
-    private fun toggleConfirmPasswordVisibility() {
-        _authUiState.value =
-            _authUiState.value.copy(isConfirmPasswordVisible = !_authUiState.value.isConfirmPasswordVisible)
-    }
 
     // Observe email verification status
     suspend fun observeEmailVerification(openAndPopUp: (Any, Any) -> Unit) {
@@ -192,17 +225,19 @@ class AuthenticationViewModel @Inject constructor(
         launchCatching {
 
             if (_userDetailState.value.displayName.isEmpty() || _userDetailState.value.username.isEmpty() || _userDetailState.value.dob.isEmpty()) {
-                _userDetailState.value = _userDetailState.value.copy(
-                    usernameError = _userDetailState.value.username.isEmpty(),
-                    nameError = _userDetailState.value.displayName.isEmpty(),
-                    dobError = _userDetailState.value.dob.isEmpty(),
-                )
+                _userDetailState.update {
+                    it.copy(
+                        usernameError = _userDetailState.value.username.isEmpty(),
+                        nameError = _userDetailState.value.displayName.isEmpty(),
+                        dobError = _userDetailState.value.dob.isEmpty(),
+                    )
+                }
                 throw IllegalArgumentException("Fields cannot be empty cannot be empty")
             }
-            if(_userDetailState.value.usernameError) {
+            if (_userDetailState.value.usernameError) {
                 throw IllegalArgumentException("Username should be unique")
             }
-
+            openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
             accountService.updateDisplayName(_userDetailState.value.displayName)
             firestoreService.createUserInFireStore(
                 name = _userDetailState.value.displayName,
@@ -216,7 +251,7 @@ class AuthenticationViewModel @Inject constructor(
                 following = 0
 
             )
-            openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
+
         }
     }
 
@@ -233,14 +268,21 @@ class AuthenticationViewModel @Inject constructor(
             updateLoadingStatus(false)
 
             if (!_isEmailVerified.value) {
-                accountService.verifyUserAccount(_authUiState.value.email, _authUiState.value.password)
+                accountService.verifyUserAccount(
+                    _authUiState.value.email,
+                    _authUiState.value.password
+                )
                 openScreen(Graphs.AuthGraph.VerificationDialog)
-            } else if (accountService.getFirebaseUser()!!.displayName.isNullOrEmpty()) {
+            } else if (!isUserCompletelyRegistered()) {
                 openScreen(Graphs.AuthGraph.AddUserDetailsScreen)
             } else {
                 openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
             }
         }
+    }
+
+    private fun isUserCompletelyRegistered(): Boolean {
+        return thredditUser?.isUserRegistered ?: false
     }
 
     // Handle sign-up with email and password
@@ -254,9 +296,11 @@ class AuthenticationViewModel @Inject constructor(
             sendSnackbarMessage("Account Created!")
             openScreen(Graphs.AuthGraph.VerificationDialog)
 //            signOut() // Sign out the user after signup
-            _userDetailState.value = _userDetailState.value.copy(
-                email = _authUiState.value.email
-            )
+            _userDetailState.update {
+                it.copy(
+                    email = _authUiState.value.email
+                )
+            }
         }
     }
 
@@ -267,26 +311,29 @@ class AuthenticationViewModel @Inject constructor(
         openAndPopUp: (Any, Any) -> Unit
     ) {
         launchCatching {
-            if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                accountService.signInWithGoogle(googleIdTokenCredential.idToken)
-
-                val currentUser = accountService.getFirebaseUser()
-
-                openScreen(Graphs.AuthGraph.AddUserDetailsScreen)
-
-                _userDetailState.value = _userDetailState.value.copy(
-                    displayName = currentUser!!.displayName ?: "",
-                    email = currentUser.email ?: ""
-                )
-
-//                openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
-
-            } else {
+            if (credential !is CustomCredential || credential.type != TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 Log.d("auth", "Unexpected Credential")
+                return@launchCatching
+            }
+
+            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+            accountService.signInWithGoogle(googleIdTokenCredential.idToken)
+
+            if (isUserCompletelyRegistered()) {
+                openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
+            } else {
+                openScreen(Graphs.AuthGraph.AddUserDetailsScreen)
+                val currentUser = accountService.getFirebaseUser()
+                _userDetailState.update {
+                    it.copy(
+                        displayName = currentUser?.displayName.orEmpty(),
+                        email = currentUser?.email.orEmpty()
+                    )
+                }
             }
         }
     }
+
 
     // Helper function to resend verification link
     private fun resendVerificationLink() {
@@ -309,6 +356,7 @@ class AuthenticationViewModel @Inject constructor(
 
     // Validation for login and sign-up
     private fun validateEmailAndPassword() {
+        if (!_authUiState.value.email.isValidEmail()) throw IllegalArgumentException("Invalid Email " + _authUiState.value.email)
         if (_authUiState.value.email.isBlank()) throw IllegalArgumentException("Email cannot be blank")
         if (_authUiState.value.password.isBlank()) throw IllegalArgumentException("Password cannot be blank")
     }
@@ -338,31 +386,34 @@ class AuthenticationViewModel @Inject constructor(
             handleException(throwable)
         }, block = block)
 
+
     // Centralized exception handling
     private fun handleException(throwable: Throwable) {
-
-        when (throwable) {
+        val message = when (throwable) {
             is FirebaseAuthException -> handleFirebaseAuthException(throwable)
-            is IllegalArgumentException -> sendSnackbarMessage(throwable.message ?: "Invalid Input")
-            else -> sendSnackbarMessage(throwable.message ?: "An unknown error occurred")
+            is IllegalArgumentException -> throwable.message ?: "Invalid Input"
+            else -> throwable.message ?: "An unknown error occurred"
         }
+        sendSnackbarMessage(message)
         updateLoadingStatus(false)
-        Log.d(ERROR_TAG, throwable.message.orEmpty())
+        Log.d(ERROR_TAG, message)
     }
 
-    // Handle Firebase-specific exceptions
-    private fun handleFirebaseAuthException(exception: FirebaseAuthException) {
-        Log.d("AUTH ERROR", "${exception.errorCode}")
-
-        when (exception.errorCode) {
-            "ERROR_INVALID_EMAIL" -> sendSnackbarMessage("The email address is badly formatted.")
-            "ERROR_INVALID_CREDENTIAL" -> sendSnackbarMessage("The credentials are incorrect.")
-            "ERROR_EMAIL_ALREADY_IN_USE" -> sendSnackbarMessage("This email is already in use.")
-            "ERROR_WRONG_PASSWORD" -> sendSnackbarMessage("Incorrect password.")
-            "ERROR_WEAK_PASSWORD" -> sendSnackbarMessage("Password is too weak.")
-            "ERROR_USER_NOT_FOUND" -> sendSnackbarMessage("No account found with this email.")
-            "ERROR_TOO_MANY_REQUESTS" -> sendSnackbarMessage("Too many requests with this email.")
-            else -> sendSnackbarMessage(exception.message ?: "Authentication error")
+    private fun handleFirebaseAuthException(exception: FirebaseAuthException): String {
+        return when (exception.errorCode) {
+            "ERROR_INVALID_EMAIL" -> "The email address is badly formatted."
+            "ERROR_INVALID_CREDENTIAL" -> "The credentials are incorrect."
+            "ERROR_EMAIL_ALREADY_IN_USE" -> "This email is already in use."
+            "ERROR_WRONG_PASSWORD" -> "Incorrect password."
+            "ERROR_WEAK_PASSWORD" -> "Password is too weak."
+            "ERROR_USER_NOT_FOUND" -> "No account found with this email."
+            "ERROR_TOO_MANY_REQUESTS" -> "Too many requests with this email."
+            else -> exception.message ?: "Authentication error"
         }
     }
+}
+
+enum class VisibilityType {
+    PASSWORD,
+    CONFIRM_PASSWORD
 }

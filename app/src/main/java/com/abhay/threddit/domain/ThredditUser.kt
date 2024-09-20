@@ -10,4 +10,5 @@ data class ThredditUser(
     val profilePicUrl: String? = null,
     val followers: Int = 0,
     val following: Int = 0,
+    val isUserRegistered: Boolean = false
 )

@@ -12,7 +12,7 @@ val Purple40 = Color(0xFF272727)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-val PrimaryDark = Color(0xFF000000)  // Black
+val PrimaryDark = Color(0xFF272727)  // Black
 val SecondaryDark = Color(0xFF272727)  // Dark Gray
 val TertiaryDark = Color(0xFF0095F6)  // Threads Blue Accent
 val BackgroundDark = Color(0xFF181818)  // Black background

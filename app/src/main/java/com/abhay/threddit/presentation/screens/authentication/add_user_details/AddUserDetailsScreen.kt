@@ -203,7 +203,7 @@ fun AddUserDetailsScreen(
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
+                        containerColor = MaterialTheme.colorScheme.primary,
                     ),
                     onClick = { onEvent(AuthUiEvents.SaveUserDetails(onOpenAndPopUp)) }) {
                     Text(text = "Proceed")
@@ -215,7 +215,7 @@ fun AddUserDetailsScreen(
 
 
 @Preview(
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    uiMode = Configuration.UI_MODE_NIGHT_NO
 )
 @Composable
 private fun Aasd() {
