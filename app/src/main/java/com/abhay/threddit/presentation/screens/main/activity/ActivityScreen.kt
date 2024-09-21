@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.screens.feed
+package com.abhay.threddit.presentation.screens.main.activity
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,8 +9,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun FeedScreen(modifier: Modifier = Modifier) {
+fun ActivityScreen(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "FeedScreen", style = MaterialTheme.typography.displayLarge)
+        Text(text = "Activity Screen", style = MaterialTheme.typography.displayLarge)
     }
 }

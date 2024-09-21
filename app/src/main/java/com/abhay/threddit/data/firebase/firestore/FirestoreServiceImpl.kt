@@ -72,7 +72,7 @@ class FirestoreServiceImpl @Inject constructor(
                             if (user != null) {
                                 trySend(user).isSuccess
                             }
-                            Log.d("ThredditUser", user?.name ?: "Something not working")
+                            Log.d("ThredditUser", user?.displayName ?: "Something not working")
                         }else{
                             trySend(null).isSuccess
                             Log.d("ThredditUser", "No user found with the given userId")
@@ -124,6 +124,7 @@ class FirestoreServiceImpl @Inject constructor(
             DISPLAY_NAME to name,
             USERNAME to username,
             DOB to dob,
+            EMAIL to email,
             BIO to bio,
             PROFILE_PIC_URL to null,
             FOLLOWING to following,

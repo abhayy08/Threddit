@@ -6,12 +6,12 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.abhay.threddit.presentation.screens.activity.ActivityScreen
-import com.abhay.threddit.presentation.screens.add_post.AddPostScreen
-import com.abhay.threddit.presentation.screens.feed.FeedScreen
+import com.abhay.threddit.presentation.screens.main.activity.ActivityScreen
+import com.abhay.threddit.presentation.screens.main.add_post.AddPostScreen
+import com.abhay.threddit.presentation.screens.main.feed.FeedScreen
 import com.abhay.threddit.presentation.navigation.routes.Graphs
-import com.abhay.threddit.presentation.screens.profile.profile_screen.ProfileScreen
-import com.abhay.threddit.presentation.screens.search.SearchScreen
+import com.abhay.threddit.presentation.screens.main.profile.profile_screen.ProfileScreen
+import com.abhay.threddit.presentation.screens.main.search.SearchScreen
 
 
 fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {

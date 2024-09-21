@@ -3,8 +3,6 @@ package com.abhay.threddit.presentation.screens.authentication
 import android.net.Uri
 import android.util.Log
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.credentials.Credential
 import androidx.credentials.CustomCredential
 import androidx.lifecycle.ViewModel
@@ -23,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuthException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -88,10 +87,17 @@ class AuthenticationViewModel @Inject constructor(
             is AuthUiEvents.OnConfirmPasswordChange -> updateConfirmPassword(event.confirmPassword)
             is AuthUiEvents.OnPasswordVisibilityChange -> toggleVisibility(VisibilityType.PASSWORD)
             is AuthUiEvents.OnConfirmPasswordVisibilityChange -> toggleVisibility(VisibilityType.CONFIRM_PASSWORD)
-            is AuthUiEvents.OnLogInWithEmail -> onLogInWithEmail(event.openAndPopUp, event.openScreen)
+            is AuthUiEvents.OnLogInWithEmail -> onLogInWithEmail(
+                event.openAndPopUp,
+                event.openScreen
+            )
 
             is AuthUiEvents.OnSignUpWithEmail -> onSignUpWithEmail(event.openScreen)
-            is AuthUiEvents.OnSignInWithGoogle -> onSignInWithGoogle(event.credential, event.openScreen, event.openAndPopUp)
+            is AuthUiEvents.OnSignInWithGoogle -> onSignInWithGoogle(
+                event.credential,
+                event.openScreen,
+                event.openAndPopUp
+            )
 
             is AuthUiEvents.OnSignOut -> signOut()
             is AuthUiEvents.OnResendVerificationLink -> resendVerificationLink()
@@ -189,7 +195,11 @@ class AuthenticationViewModel @Inject constructor(
     private fun toggleVisibility(type: VisibilityType) {
         when (type) {
             VisibilityType.PASSWORD -> _authUiState.update { it.copy(isPasswordVisible = !_authUiState.value.isPasswordVisible) }
-            VisibilityType.CONFIRM_PASSWORD -> _authUiState.update { it.copy(isConfirmPasswordVisible = !_authUiState.value.isConfirmPasswordVisible) }
+            VisibilityType.CONFIRM_PASSWORD -> _authUiState.update {
+                it.copy(
+                    isConfirmPasswordVisible = !_authUiState.value.isConfirmPasswordVisible
+                )
+            }
         }
     }
 
@@ -237,7 +247,6 @@ class AuthenticationViewModel @Inject constructor(
             if (_userDetailState.value.usernameError) {
                 throw IllegalArgumentException("Username should be unique")
             }
-            openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
             accountService.updateDisplayName(_userDetailState.value.displayName)
             firestoreService.createUserInFireStore(
                 name = _userDetailState.value.displayName,
@@ -251,6 +260,7 @@ class AuthenticationViewModel @Inject constructor(
                 following = 0
 
             )
+            openAndPopUp(Graphs.MainNavGraph, Graphs.AuthGraph)
 
         }
     }

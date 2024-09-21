@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.screens.profile.profile_screen
+package com.abhay.threddit.presentation.screens.main.profile.profile_screen
 
 import android.content.res.Configuration
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -6,11 +6,13 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +25,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryTabRow
@@ -32,6 +36,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -41,20 +46,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.abhay.threddit.R
-import com.abhay.threddit.data.firebase.auth.AccountServiceImpl
-import com.abhay.threddit.data.firebase.firestore.FirestoreServiceImpl
-import com.abhay.threddit.ui.theme.ThredditTheme
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.storage
 
 @Composable
 fun ProfileScreen(
@@ -62,38 +62,62 @@ fun ProfileScreen(
     onClick: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
+
+    LaunchedEffect(Unit) {
+        viewModel.loadProfile()
+    }
+
+    val userProfile = viewModel.userProfile.collectAsState().value
     Surface(
         color = MaterialTheme.colorScheme.background
     ) {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            ){
-                UserInfo(
-                    modifier = Modifier.fillMaxWidth(),
-                    name = "Abhay",
-                    username = "abhayy_08",
-                    bio = "I am a software engineer"
-                )
-                EditAndShareButton(
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ){
+            if (userProfile == null) {
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(vertical = 12.dp),
-                    viewModel = viewModel
+                        .padding(horizontal = 10.dp)
+                        .size(25.dp),
+                    color = MaterialTheme.colorScheme.onSecondary
                 )
-
             }
-            PostsAndComments(
-                modifier = Modifier.fillMaxSize(),
-            )
+            userProfile?.let {user ->
+                Column(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(vertical = 12.dp,horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    ){
+                        UserInfo(
+                            modifier = Modifier.fillMaxWidth(),
+                            name = user.displayName,
+                            username = "@${user.username}",
+                            profilePicUrl = user.profilePicUrl,
+                            bio = user.bio,
+                            followers = user.followers
+                        )
+                        EditAndShareButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .padding(vertical = 12.dp),
+                            viewModel = viewModel
+                        )
+
+                    }
+                    PostsAndComments(
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+            }
         }
     }
 }
@@ -244,7 +268,9 @@ fun UserInfo(
     modifier: Modifier = Modifier,
     name: String,
     username: String,
-    bio: String? = null
+    profilePicUrl: String? = null,
+    bio: String? = null,
+    followers: Int,
 ) {
     Column(
         modifier = modifier
@@ -255,11 +281,11 @@ fun UserInfo(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth(0.5f)
+                modifier = Modifier.fillMaxWidth(0.6f)
             ) {
                 Text(
                     text = name,
-                    style = MaterialTheme.typography.displaySmall
+                    style = MaterialTheme.typography.displaySmall,
                 )
 //                Spacer(modifier = Modifier.height(4.dp))
 
@@ -278,14 +304,30 @@ fun UserInfo(
                         fontWeight = FontWeight.W200
                     )
                 }
+
+                Text(
+                    modifier = Modifier
+                        .alpha(0.7f)
+                        .padding(vertical = 6.dp),
+                    text = "$followers Followers",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.W400
+                )
+
             }
 
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
-                contentDescription = stringResource(R.string.user_image),
+            val placeholderImage =
+                if (isSystemInDarkTheme()) R.drawable.default_pfp_light else R.drawable.default_pfp_dark
+
+            AsyncImage(
+                model = profilePicUrl ?: placeholderImage,
+                contentDescription = "Profile Pic",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
+                    .padding(vertical = 15.dp)
+                    .size(80.dp)
+                    .aspectRatio(1f)
                     .clip(CircleShape)
-                    .size(70.dp)
             )
 
         }

@@ -1,8 +1,8 @@
 package com.abhay.threddit.domain
 
 data class ThredditUser(
-    val userId: String? = null ,
-    val name: String = "",
+    val userId: String = "",
+    val displayName: String = "",
     val username: String = "",
     val email: String = "",
     val dob: String = "",

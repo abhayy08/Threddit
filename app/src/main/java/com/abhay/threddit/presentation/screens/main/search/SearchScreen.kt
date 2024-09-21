@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.screens.activity
+package com.abhay.threddit.presentation.screens.main.search
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,8 +9,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun ActivityScreen(modifier: Modifier = Modifier) {
+fun SearchScreen(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Activity Screen", style = MaterialTheme.typography.displayLarge)
+        Text(text = "Search Screen", style = MaterialTheme.typography.displayLarge)
     }
 }

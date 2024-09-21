@@ -1,4 +1,4 @@
-package com.abhay.threddit.presentation.screens.add_post
+package com.abhay.threddit.presentation.screens.main.feed
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,8 +9,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun AddPostScreen(modifier: Modifier = Modifier) {
+fun FeedScreen(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Add Post Screen", style = MaterialTheme.typography.displayLarge)
+        Text(text = "FeedScreen", style = MaterialTheme.typography.displayLarge)
     }
 }
