@@ -1,126 +1,132 @@
 package com.abhay.threddit.presentation.screens.main.add_post
 
 import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.abhay.threddit.R
+import com.abhay.threddit.presentation.components.CustomButton
 import com.abhay.threddit.ui.theme.ThredditTheme
 
 @Composable
 fun AddPostScreen(
     modifier: Modifier = Modifier,
-    onBack: () -> Unit = {},
+    state: AddPostState,
+    onEvent: (AddPostEvents) -> Unit = {},
+    openAndPopUp: (Any, Any) -> Unit = {_,_ ->},
 ) {
     Surface(
+        modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.background
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            AddPostTopAppbar()
-            HorizontalDivider()
-            NewPost(
-
-            )
-        }
-    }
-}
-
-@Composable
-fun NewPost(
-    modifier: Modifier = Modifier,
-    value: String = "",
-    onValueChange: () -> Unit = {}
-) {
-    val placeholderImage =
-        if (isSystemInDarkTheme()) R.drawable.default_pfp_light else R.drawable.default_pfp_dark
-    Row(
-        modifier = modifier
-            .padding(6.dp)
-            .fillMaxWidth()
-    ) {
-        Image(
-            painter = painterResource(id = placeholderImage), contentDescription = "Profile Pic",
             modifier = Modifier
-                .size(65.dp)
-                .padding(horizontal = 8.dp)
-        )
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "abhayy_08_",
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(top = 10.dp)
+                text = "Add New Post",
+                style = MaterialTheme.typography.headlineSmall,
             )
-            BasicTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = "",
-                onValueChange = {},
-                decorationBox = { innerTextField ->
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        if (value.isEmpty()) {
-                            Text(text = "Placeholder")
-                        }
-                        innerTextField()
-                    }
-                }
-            )
-        }
-    }
-}
+            Spacer(modifier = Modifier.height(12.dp))
+            val placeholderImage =
+                if (isSystemInDarkTheme()) R.drawable.default_pfp_light else R.drawable.default_pfp_dark
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddPostTopAppbar(modifier: Modifier = Modifier) {
-    TopAppBar(
-        modifier = modifier.padding(horizontal = 4.dp),
-        title = {
-            Text(
-                text = stringResource(R.string.new_post),
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background
-        ),
-        navigationIcon = {
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(imageVector = Icons.Rounded.Close, contentDescription = "back")
+            Row(
+                modifier = modifier
+                    .padding(6.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Image(
+                    painter = painterResource(id = placeholderImage),
+                    contentDescription = "Profile Pic",
+                    modifier = Modifier
+                        .size(55.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Text(
+                        text = "abhayy_08_",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .defaultMinSize(minHeight = 200.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+
+            ) {
+                Box(
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    BasicTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = state.content,
+                        onValueChange = { onEvent(AddPostEvents.onContentChange(it)) },
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.onBackground),
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    )
+                    if (state.content.isEmpty()) {
+                        Text(
+                            text = "What's on your mind ?",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                        )
+                    }
+
+                }
+            }
+
+            CustomButton(
+                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                onClick = {onEvent(AddPostEvents.onAddPost(openAndPopUp))}
+            ) {
+                Text(text = "Post", style = MaterialTheme.typography.labelLarge)
             }
         }
-    )
+    }
 }
 
 
@@ -130,6 +136,8 @@ fun AddPostTopAppbar(modifier: Modifier = Modifier) {
 @Composable
 private fun AddPostPreview() {
     ThredditTheme {
-        AddPostScreen()
+        AddPostScreen(
+            state = AddPostState()
+        )
     }
 }

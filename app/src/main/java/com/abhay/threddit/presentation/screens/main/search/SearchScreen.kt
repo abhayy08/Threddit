@@ -12,5 +12,6 @@ import androidx.compose.ui.Modifier
 fun SearchScreen(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(text = "Search Screen", style = MaterialTheme.typography.displayLarge)
+        Text(text = "To be implemented", style = MaterialTheme.typography.displaySmall)
     }
 }

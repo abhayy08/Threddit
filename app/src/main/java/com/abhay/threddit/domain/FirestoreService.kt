@@ -24,4 +24,6 @@ interface FirestoreService {
     suspend fun getThredditUser(): ThredditUser?
 
     fun getUserFlow(): Flow<ThredditUser?>
+
+    fun addPost(content: String, date: String, onResult: (Boolean) -> Unit)
 }
