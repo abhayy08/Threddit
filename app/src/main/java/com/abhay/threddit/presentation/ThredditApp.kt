@@ -3,6 +3,9 @@ package com.abhay.threddit.presentation
 import android.content.res.Configuration
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
@@ -31,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination
@@ -87,11 +91,11 @@ fun ThredditApp(
                 snackbarHost = {
                     SnackbarHost(hostState = snackBarHostState)
                 },
-                topBar = {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-                    ThredditTopAppBar(currentDestination = currentDestination)
-                },
+//                topBar = {
+//                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+//                    val currentDestination = navBackStackEntry?.destination
+//                    ThredditTopAppBar(currentDestination = currentDestination)
+//                },
                 bottomBar = {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentDestination = navBackStackEntry?.destination
@@ -111,7 +115,7 @@ fun ThredditApp(
                     startDestination = startDest,
                     modifier = Modifier
                         .padding(innerPadding)
-                        .windowInsetsPadding(WindowInsets.ime)
+                        .padding(WindowInsets.ime.asPaddingValues())
                 ) {
                     RootNavGraph(
                         navController = navController,

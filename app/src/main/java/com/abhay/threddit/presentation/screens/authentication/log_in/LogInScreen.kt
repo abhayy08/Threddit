@@ -180,7 +180,7 @@ fun LogInScreen(
                         .padding(vertical = 10.dp)
                         .height(45.dp)
                         .shadow(8.dp, shape = RoundedCornerShape(8.dp)),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.medium,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary

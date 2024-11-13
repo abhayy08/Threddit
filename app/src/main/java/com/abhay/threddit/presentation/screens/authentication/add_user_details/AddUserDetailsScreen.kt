@@ -103,7 +103,7 @@ fun AddUserDetailsScreen(
                 modifier = Modifier
                     .padding(bottom = 12.dp)
                     .wrapContentHeight(),
-                shape = RoundedCornerShape(8.dp),
+                shape = MaterialTheme.shapes.medium,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent
@@ -200,7 +200,7 @@ fun AddUserDetailsScreen(
                     .padding(vertical = 15.dp)
                     .height(45.dp)
                     .shadow(8.dp, shape = RoundedCornerShape(8.dp)),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.medium,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,

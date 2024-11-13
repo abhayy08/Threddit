@@ -47,8 +47,9 @@ private val DarkColorScheme = darkColorScheme(
     onTertiary = OnTertiaryDark,
     onBackground = OnBackgroundDark,
     onSurface = OnSurfaceDark,
-    surfaceContainerHigh = SurfaceDark,
-    onSurfaceVariant = OnPrimaryDark
+    surfaceContainerHigh = surfaceContainerHighDark,
+    onSurfaceVariant = OnPrimaryDark,
+    surfaceContainerLow = surfaceContainerLowDark
 )
 
 // Light Color Scheme
@@ -64,7 +65,8 @@ private val LightColorScheme = lightColorScheme(
     onBackground = OnBackgroundLight,
     onSurface = OnSurfaceLight,
     onSurfaceVariant = OnPrimaryLight,
-    surfaceContainerHigh = SurfaceLight
+    surfaceContainerHigh = surfaceContainerHighLight,
+    surfaceContainerLow = surfaceContainerLowLight
 )
 
 

@@ -1,11 +1,11 @@
 package com.abhay.threddit.presentation.screens.main.profile.profile_screen
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,7 +25,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -47,7 +46,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,6 +54,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.abhay.threddit.R
 
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
@@ -74,7 +74,7 @@ fun ProfileScreen(
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
-        ){
+        ) {
             if (userProfile == null) {
                 CircularProgressIndicator(
                     strokeWidth = 2.dp,
@@ -84,18 +84,18 @@ fun ProfileScreen(
                     color = MaterialTheme.colorScheme.onSecondary
                 )
             }
-            userProfile?.let {user ->
+            userProfile?.let { user ->
                 Column(
                     modifier = modifier
                         .fillMaxSize()
-                        .padding(vertical = 12.dp,horizontal = 20.dp),
+                        .padding(vertical = 12.dp, horizontal = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentHeight()
-                    ){
+                    ) {
                         UserInfo(
                             modifier = Modifier.fillMaxWidth(),
                             name = user.displayName,
@@ -147,7 +147,7 @@ fun EditAndShareButton(
                 .weight(1f)
                 .wrapContentHeight()
                 .padding(horizontal = 2.dp),
-            shape = RoundedCornerShape(8.dp),
+            shape = MaterialTheme.shapes.medium,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent
@@ -169,7 +169,7 @@ fun EditAndShareButton(
                 .weight(1f)
                 .wrapContentHeight()
                 .padding(horizontal = 2.dp),
-            shape = RoundedCornerShape(8.dp),
+            shape = MaterialTheme.shapes.medium,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent
