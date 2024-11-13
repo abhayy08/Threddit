@@ -11,4 +11,5 @@ const val BIO = "bio"
 const val PROFILE_PIC_URL = "profilePicUrl"
 const val FOLLOWING = "following"
 const val FOLLOWERS = "followers"
+const val IS_USER_REGISTERED = "isUserRegistered"
 

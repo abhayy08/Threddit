@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,10 +49,10 @@ class AuthenticationViewModel @Inject constructor(
     private var usersWithSameUsername: List<ThredditUser> = emptyList()
 
     private var thredditUser: ThredditUser? = null
-
-    init {
-        collectThredditUser()
-    }
+//
+//    init {
+//        collectThredditUser()
+//    }
 
 
     /*
@@ -291,7 +292,11 @@ class AuthenticationViewModel @Inject constructor(
         }
     }
 
-    private fun isUserCompletelyRegistered(): Boolean {
+    private suspend fun isUserCompletelyRegistered(): Boolean {
+
+        thredditUser = firestoreService.getThredditUser()
+
+
         return thredditUser?.isUserRegistered ?: false
     }
 

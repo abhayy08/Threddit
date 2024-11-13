@@ -8,6 +8,7 @@ import com.abhay.threddit.data.firebase.DOB
 import com.abhay.threddit.data.firebase.EMAIL
 import com.abhay.threddit.data.firebase.FOLLOWERS
 import com.abhay.threddit.data.firebase.FOLLOWING
+import com.abhay.threddit.data.firebase.IS_USER_REGISTERED
 import com.abhay.threddit.data.firebase.PROFILE_PIC_URL
 import com.abhay.threddit.data.firebase.USERID
 import com.abhay.threddit.data.firebase.USERNAME
@@ -25,9 +26,11 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.tasks.await
 import okhttp3.internal.toImmutableList
 import javax.inject.Inject
 import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class FirestoreServiceImpl @Inject constructor(
     private val db: FirebaseFirestore,
@@ -58,27 +61,27 @@ class FirestoreServiceImpl @Inject constructor(
     override fun getUserFlow(): Flow<ThredditUser?> = callbackFlow {
         val userId = Firebase.auth.currentUser?.uid
 
-            val listenerRegistration = userId?.let {
-                Firebase.firestore.collection(USERS).document(it)
-                    .addSnapshotListener { snapshot, e ->
-                        if (e != null) {
-                            Log.e("FirestoreService", "Error getting user data")
-                            close(e)
-                            return@addSnapshotListener
-                        }
-
-                        if (snapshot != null && snapshot.exists()) {
-                            val user = snapshot.toObject(ThredditUser::class.java)
-                            if (user != null) {
-                                trySend(user).isSuccess
-                            }
-                            Log.d("ThredditUser", user?.displayName ?: "Something not working")
-                        }else{
-                            trySend(null).isSuccess
-                            Log.d("ThredditUser", "No user found with the given userId")
-                        }
+        val listenerRegistration = userId?.let {
+            db.collection(USERS).document(it)
+                .addSnapshotListener { snapshot, e ->
+                    if (e != null) {
+                        Log.e("FirestoreService", "Error getting user data")
+                        close(e)
+                        return@addSnapshotListener
                     }
-            }
+
+                    if (snapshot != null && snapshot.exists()) {
+                        val user = snapshot.toObject(ThredditUser::class.java)
+                        if (user != null) {
+                            trySend(user).isSuccess
+                        }
+                        Log.d("ThredditUser", user?.displayName ?: "Something not working")
+                    } else {
+                        trySend(null).isSuccess
+                        Log.d("ThredditUser", "No user found with the given userId")
+                    }
+                }
+        }
 
 
         awaitClose {
@@ -97,7 +100,7 @@ class FirestoreServiceImpl @Inject constructor(
                         val usersWithSameUsernameList =
                             document.toObjects(ThredditUser::class.java).toImmutableList()
                         continuation.resume(usersWithSameUsernameList)
-                    }else{
+                    } else {
                         continuation.resume(emptyList())
                     }
 
@@ -141,6 +144,34 @@ class FirestoreServiceImpl @Inject constructor(
                 }
             }
             .addOnFailureListener { e -> Log.w("FirestoreService", "Error storing user data", e) }
+    }
+
+    override suspend fun getThredditUser(): ThredditUser? = suspendCoroutine { continuation ->
+    val userId = Firebase.auth.currentUser?.uid
+        var thredditUser: ThredditUser? = null
+
+        userId?.let {
+            db.collection(USERS).document(it)
+                .get()
+                .addOnSuccessListener {document ->
+
+                    if(document != null) {
+                        thredditUser = ThredditUser(
+                            userId = document.getString(USERID) ?: "",
+                            displayName = document.getString(DISPLAY_NAME) ?: "",
+                            username = document.getString(USERNAME) ?: "",
+                            email = document.getString(EMAIL) ?: "",
+                            dob = document.getString(DOB) ?: "",
+                            isUserRegistered = document.getBoolean(IS_USER_REGISTERED) ?: false
+                        )
+                        Log.d("ThredditUser", thredditUser.toString())
+                    }
+                    continuation.resume(thredditUser)
+                }
+                .addOnFailureListener{
+                    continuation.resume(null)
+                }
+        } ?: continuation.resume(null)
     }
 
     private fun saveProfileImageUrlToFirestore(profileImageUrl: String) {
