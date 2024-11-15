@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 
 data class AddPostState(
+    val title: String = "",
     val content: String = "",
     val date: String = getCurrentDate()
 )

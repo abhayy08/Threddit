@@ -21,7 +21,6 @@ import com.google.firebase.auth.FirebaseAuthException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +28,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -154,7 +152,7 @@ class AuthenticationViewModel @Inject constructor(
             _userDetailState.update { it.copy(checkingUsernameUniqueness = true) }
 
             val isUsernameTaken = runCatching {
-                firestoreService.getUserswithSameUsername(username).isNotEmpty()
+                firestoreService.getUsersWithSameUsername(username).isNotEmpty()
             }.getOrDefault(false)
 
             // Update the UI based on whether the username is unique

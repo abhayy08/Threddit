@@ -20,21 +20,28 @@ class AddPostViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _addPostState = mutableStateOf(AddPostState())
-    val addpoststate: State<AddPostState> = _addPostState
+    val addPostState: State<AddPostState> = _addPostState
 
     fun onEvent(event: AddPostEvents) {
         when (event) {
-            is AddPostEvents.onContentChange -> {
+            is AddPostEvents.OnTitleChange -> {
+                _addPostState.value = _addPostState.value.copy(title = event.title)
+            }
+
+            is AddPostEvents.OnContentChange -> {
                 _addPostState.value = _addPostState.value.copy(content = event.content)
             }
 
-            is AddPostEvents.onAddPost -> addPost(event.openAndPopUp)
+            is AddPostEvents.OnAddPost -> addPost(event.username, event.openAndPopUp)
         }
     }
 
-    private fun addPost(openAndPopUp: (Any, Any) -> Unit) {
+    private fun addPost(username: String, openAndPopUp: (Any, Any) -> Unit) {
         firestoreService.addPost(
-            content = _addPostState.value.content, date = getCurrentDate()
+            username = username,
+            title = _addPostState.value.title,
+            content = _addPostState.value.content,
+            date = getCurrentDate()
         ) { isSuccessful ->
             if (isSuccessful) {
                 openAndPopUp(

@@ -7,7 +7,7 @@ interface FirestoreService {
 
     fun uploadProfileImage(imageUri: Uri)
 
-    suspend fun getUserswithSameUsername(username: String): List<ThredditUser>
+    suspend fun getUsersWithSameUsername(username: String): List<ThredditUser>
 
     suspend fun createUserInFireStore(
         userId: String,
@@ -25,5 +25,13 @@ interface FirestoreService {
 
     fun getUserFlow(): Flow<ThredditUser?>
 
-    fun addPost(content: String, date: String, onResult: (Boolean) -> Unit)
+    fun addPost(
+        username: String,
+        title: String,
+        content: String,
+        date: String,
+        onResult: (Boolean) -> Unit
+    )
+
+    fun getPostsByUserId(): Flow<List<Post>>
 }

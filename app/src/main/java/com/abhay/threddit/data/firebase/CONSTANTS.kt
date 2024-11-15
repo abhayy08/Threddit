@@ -18,6 +18,7 @@ const val IS_USER_REGISTERED = "isUserRegistered"
 
 // POST INFO
 const val POST_ID = "postId"
+const val POST_TITLE = "postTitle"
 const val POST_CONTENT = "postContent"
 const val POST_DATE = "postDate"
 const val POST_LIKES = "postLikes"

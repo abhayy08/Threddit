@@ -15,11 +15,13 @@ import com.abhay.threddit.data.firebase.POST_CONTENT
 import com.abhay.threddit.data.firebase.POST_DATE
 import com.abhay.threddit.data.firebase.POST_ID
 import com.abhay.threddit.data.firebase.POST_LIKES
+import com.abhay.threddit.data.firebase.POST_TITLE
 import com.abhay.threddit.data.firebase.PROFILE_PIC_URL
 import com.abhay.threddit.data.firebase.USERID
 import com.abhay.threddit.data.firebase.USERNAME
 import com.abhay.threddit.data.firebase.USERS
 import com.abhay.threddit.domain.FirestoreService
+import com.abhay.threddit.domain.Post
 import com.abhay.threddit.domain.ThredditUser
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -32,7 +34,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.tasks.await
 import okhttp3.internal.toImmutableList
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -57,7 +58,7 @@ class FirestoreServiceImpl @Inject constructor(
 
     private fun uploadImage(imageUri: Uri, profileImageRef: StorageReference) {
         profileImageRef.putFile(imageUri)
-            .addOnSuccessListener { taskSnapshot ->
+            .addOnSuccessListener {
                 profileImageRef.downloadUrl.addOnSuccessListener { uri ->
                     val profileImageUrl = uri.toString()
                     saveProfileImageUrlToFirestore(profileImageUrl)
@@ -70,19 +71,29 @@ class FirestoreServiceImpl @Inject constructor(
 
         val listenerRegistration = userId?.let {
             db.collection(USERS).document(it)
-                .addSnapshotListener { snapshot, e ->
+                .addSnapshotListener { document, e ->
                     if (e != null) {
                         Log.e("FirestoreService", "Error getting user data")
                         close(e)
                         return@addSnapshotListener
                     }
 
-                    if (snapshot != null && snapshot.exists()) {
-                        val user = snapshot.toObject(ThredditUser::class.java)
-                        if (user != null) {
-                            trySend(user).isSuccess
-                        }
-                        Log.d("ThredditUser", user?.displayName ?: "Something not working")
+                    if (document != null && document.exists()) {
+                        val user = ThredditUser(
+                            userId = document.getString(USERID) ?: "",
+                            displayName = document.getString(DISPLAY_NAME) ?: "",
+                            username = document.getString(USERNAME) ?: "",
+                            email = document.getString(EMAIL) ?: "",
+                            dob = document.getString(DOB) ?: "",
+                            bio = document.getString(BIO) ?: "",
+                            profilePicUrl = document.getString(PROFILE_PIC_URL),
+                            followers = document.getLong(FOLLOWERS)?.toInt() ?: 0,
+                            following = document.getLong(FOLLOWERS)?.toInt() ?: 0,
+                            isUserRegistered = document.getBoolean(IS_USER_REGISTERED) ?: false
+                        )
+                        trySend(user).isSuccess
+
+                        Log.d("ThredditUser", user.displayName)
                     } else {
                         trySend(null).isSuccess
                         Log.d("ThredditUser", "No user found with the given userId")
@@ -97,7 +108,7 @@ class FirestoreServiceImpl @Inject constructor(
     }
 
 
-    override suspend fun getUserswithSameUsername(username: String): List<ThredditUser> {
+    override suspend fun getUsersWithSameUsername(username: String): List<ThredditUser> {
         return suspendCancellableCoroutine { continuation ->
             db.collection(USERS)
                 .whereEqualTo(USERNAME, username)
@@ -127,7 +138,7 @@ class FirestoreServiceImpl @Inject constructor(
         following: Int
     ) {
         val db = Firebase.firestore
-        val userId = Firebase.auth.currentUser!!.uid
+//        val userId = auth.currentUser!!.uid
 
         val userData = hashMapOf(
             USERID to userId,
@@ -154,7 +165,7 @@ class FirestoreServiceImpl @Inject constructor(
     }
 
     override suspend fun getThredditUser(): ThredditUser? = suspendCoroutine { continuation ->
-        val userId = Firebase.auth.currentUser?.uid
+        val userId = auth.currentUser?.uid
         var thredditUser: ThredditUser? = null
 
         userId?.let {
@@ -169,7 +180,7 @@ class FirestoreServiceImpl @Inject constructor(
                             username = document.getString(USERNAME) ?: "",
                             email = document.getString(EMAIL) ?: "",
                             dob = document.getString(DOB) ?: "",
-                            isUserRegistered = document.getBoolean(IS_USER_REGISTERED) ?: false
+                            isUserRegistered = document.getBoolean(IS_USER_REGISTERED) ?: false,
                         )
                         Log.d("ThredditUser", thredditUser.toString())
                     }
@@ -199,12 +210,20 @@ class FirestoreServiceImpl @Inject constructor(
 
     }
 
-    override fun addPost(content: String, date: String, onResult: (Boolean) -> Unit) {
+    override fun addPost(
+        username: String,
+        title: String,
+        content: String,
+        date: String,
+        onResult: (Boolean) -> Unit
+    ) {
         val postId = db.collection(POSTS).document().id
         val userId = auth.currentUser!!.uid
         val post = hashMapOf(
             POST_ID to postId,
             USERID to userId,
+            USERNAME to username,
+            POST_TITLE to title,
             POST_CONTENT to content,
             POST_DATE to date,
             POST_LIKES to 0,
@@ -214,7 +233,10 @@ class FirestoreServiceImpl @Inject constructor(
         db.collection(POSTS).document(postId)
             .set(post)
             .addOnSuccessListener {
-                Log.d("FirestoreService", "Post added Successully! Post content: ${post[POST_CONTENT]}")
+                Log.d(
+                    "FirestoreService",
+                    "Post added Successully! Post content: ${post[POST_CONTENT]}"
+                )
                 onResult(true)
             }
             .addOnFailureListener {
@@ -222,4 +244,37 @@ class FirestoreServiceImpl @Inject constructor(
                 Log.d("FirestoreService", "cannot add post" + it.message)
             }
     }
+
+    override fun getPostsByUserId(): Flow<List<Post>> = callbackFlow {
+        val userId = auth.currentUser!!.uid
+
+        val listener = db.collection(POSTS)
+            .whereEqualTo(USERID, userId)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    close(exception) // Close the flow if there's an error
+                    return@addSnapshotListener
+                }
+
+                var postsList = snapshot?.documents?.mapNotNull {
+                    Post(
+                        postId = it.getString(POST_ID) ?: "",
+                        userId = it.getString(USERID) ?: "",
+                        title = it.getString(POST_TITLE) ?: "",
+                        content = it.getString(POST_CONTENT) ?: "",
+                        date = it.getString(POST_DATE) ?: "",
+                        likes = it.getLong(POST_LIKES)?.toInt() ?: 0,
+                        username = it.getString(USERNAME) ?: "",
+                    )
+                } ?: emptyList()
+
+                postsList = postsList.sortedByDescending { it.date }
+
+                trySend(postsList).isSuccess // Emit the updated list of posts
+            }
+
+        awaitClose { listener.remove() } // Remove the listener when the flow is closed
+    }
+
+
 }

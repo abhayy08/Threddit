@@ -2,6 +2,7 @@ package com.abhay.threddit.presentation.screens.main.profile.profile_screen
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,7 +36,6 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -50,30 +50,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.abhay.threddit.R
+import com.abhay.threddit.domain.ThredditUser
+import com.abhay.threddit.presentation.screens.main.add_post.Comments
+import com.abhay.threddit.presentation.screens.main.add_post.Posts
+import com.abhay.threddit.ui.theme.ThredditTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {},
-    viewModel: ProfileViewModel = hiltViewModel()
+    userProfile: ThredditUser? = ThredditUser(),
+    profileState: ProfileState = ProfileState(),
+    uploadProfileImage: (Uri) -> Unit = {},
+    loadProfile: () -> Unit = {}
 ) {
 
     LaunchedEffect(Unit) {
-        viewModel.loadProfile()
+        loadProfile()
     }
 
-    val userProfile = viewModel.userProfile.collectAsState().value
     Surface(
         color = MaterialTheme.colorScheme.background
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             if (userProfile == null) {
                 CircularProgressIndicator(
@@ -104,17 +106,17 @@ fun ProfileScreen(
                             bio = user.bio,
                             followers = user.followers
                         )
-                        EditAndShareButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .padding(vertical = 12.dp),
-                            viewModel = viewModel
-                        )
+                        EditAndShareButton(modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(vertical = 12.dp),
+        //                            viewModel = viewModel
+                            uploadProfileImage = { uploadProfileImage(it) })
 
                     }
                     PostsAndComments(
                         modifier = Modifier.fillMaxSize(),
+                        profileState = profileState
                     )
                 }
             }
@@ -125,28 +127,27 @@ fun ProfileScreen(
 @Composable
 fun EditAndShareButton(
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel,
+//    viewModel: ProfileViewModel,
+    uploadProfileImage: (Uri) -> Unit
 ) {
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri ->
-            if (uri != null) {
-                viewModel.uploadProfileImage(uri)
-            }
-        }
-    )
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia(),
+            onResult = { uri ->
+                if (uri != null) {
+                    uploadProfileImage(uri)
+                }
+            })
 
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Button(
-            modifier = Modifier
-                .weight(1f)
-                .wrapContentHeight()
-                .padding(horizontal = 2.dp),
+        Button(modifier = Modifier
+            .weight(1f)
+            .wrapContentHeight()
+            .padding(horizontal = 2.dp),
             shape = MaterialTheme.shapes.medium,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
             colors = ButtonDefaults.buttonColors(
@@ -156,26 +157,23 @@ fun EditAndShareButton(
                 imagePickerLauncher.launch(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                 )
-            }
-        ) {
+            }) {
             Text(
                 modifier = Modifier.padding(0.dp),
                 text = stringResource(R.string.edit_profile),
                 style = MaterialTheme.typography.bodyMedium
             )
         }
-        Button(
-            modifier = Modifier
-                .weight(1f)
-                .wrapContentHeight()
-                .padding(horizontal = 2.dp),
+        Button(modifier = Modifier
+            .weight(1f)
+            .wrapContentHeight()
+            .padding(horizontal = 2.dp),
             shape = MaterialTheme.shapes.medium,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSecondary.copy(0.3f)),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent
             ),
-            onClick = { /*TODO*/ }
-        ) {
+            onClick = { /*TODO*/ }) {
             Text(
                 modifier = Modifier.padding(0.dp),
                 text = stringResource(R.string.share_profile),
@@ -190,11 +188,11 @@ fun EditAndShareButton(
 @Composable
 fun PostsAndComments(
     modifier: Modifier = Modifier,
+    profileState: ProfileState,
 //    selectedTabIndex: Int = 0,
 ) {
     val tabs = listOf(
-        stringResource(R.string.posts),
-        stringResource(R.string.comments)
+        "Posts", "Comments"
     )
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
@@ -222,11 +220,9 @@ fun PostsAndComments(
                 TabRowDefaults.SecondaryIndicator(
                     modifier = Modifier
                         .tabIndicatorOffset(
-                            selectedTabIndex,
-                            matchContentSize = false
+                            selectedTabIndex, matchContentSize = false
                         )
-                        .clip(RoundedCornerShape(50)),
-                    color = MaterialTheme.colorScheme.onSurface
+                        .clip(RoundedCornerShape(50)), color = MaterialTheme.colorScheme.onSurface
                 )
             },
         ) {
@@ -250,14 +246,15 @@ fun PostsAndComments(
         HorizontalPager(
             modifier = modifier
                 .fillMaxWidth()
-                .weight(1f),
-            state = pagerState
+                .weight(1f), state = pagerState
         ) { index ->
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Page $index")
+            when(tabs[index]) {
+                "Posts" -> {
+                    Posts(postList = profileState.posts)
+                }
+                "Comments" -> {
+                    Comments()
+                }
             }
         }
     }
@@ -336,12 +333,11 @@ fun UserInfo(
 }
 
 @Preview(
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
+    showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 private fun ProfilePreview() {
-//    ThredditTheme {
-//        ProfileScreen(viewModel =  ProfileViewModel(accountService = AccountServiceImpl()))
-//    }
+    ThredditTheme {
+        ProfileScreen(uploadProfileImage = {})
+    }
 }
