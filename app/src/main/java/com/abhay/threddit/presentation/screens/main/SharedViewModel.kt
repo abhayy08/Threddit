@@ -9,6 +9,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,7 +21,7 @@ class SharedViewModel @Inject constructor(
     private val firestoreService: FirestoreService
 ) : ViewModel() {
 
-    private val _thredditUser = MutableStateFlow(ThredditUser())
+    private val _thredditUser = MutableStateFlow<ThredditUser>(ThredditUser())
     val thredditUser: StateFlow<ThredditUser> = _thredditUser.asStateFlow()
 
     init {
@@ -28,9 +30,11 @@ class SharedViewModel @Inject constructor(
 
     private fun fetchUser() {
         viewModelScope.launch {
-            firestoreService.getUserFlow().collect { user ->
-                _thredditUser.update { user!! }
-            }
+            firestoreService.getUserFlow()
+                .onEach {user ->
+                    _thredditUser.update { user!! }
+                }
+                .launchIn(this)
         }
     }
 

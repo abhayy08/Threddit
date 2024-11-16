@@ -20,8 +20,9 @@ class ProfileViewModel @Inject constructor(
     private val firestoreService: FirestoreService
 ) : ViewModel() {
 
+    // get rid of this
     private val _userProfile = MutableStateFlow<ThredditUser?>(null)
-    val userProfile: StateFlow<ThredditUser?> = _userProfile.asStateFlow()
+//    val userProfile: StateFlow<ThredditUser?> = _userProfile.asStateFlow()
 
     private val _profileState = MutableStateFlow(ProfileState())
     val profileState: StateFlow<ProfileState> = _profileState.asStateFlow()

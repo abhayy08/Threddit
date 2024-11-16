@@ -92,8 +92,7 @@ class FirestoreServiceImpl @Inject constructor(
                             isUserRegistered = document.getBoolean(IS_USER_REGISTERED) ?: false
                         )
                         trySend(user).isSuccess
-
-                        Log.d("ThredditUser", user.displayName)
+                        Log.d("FirestoreService", "Emitted user: ${user.displayName}")
                     } else {
                         trySend(null).isSuccess
                         Log.d("ThredditUser", "No user found with the given userId")

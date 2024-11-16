@@ -1,6 +1,7 @@
 package com.abhay.threddit.presentation.screens.main.add_post
 
 import android.content.res.Configuration
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +39,7 @@ import com.abhay.threddit.R
 import com.abhay.threddit.domain.ThredditUser
 import com.abhay.threddit.presentation.components.CustomButton
 import com.abhay.threddit.ui.theme.ThredditTheme
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun AddPostScreen(
@@ -43,8 +47,10 @@ fun AddPostScreen(
     state: AddPostState,
     onEvent: (AddPostEvents) -> Unit = {},
     openAndPopUp: (Any, Any) -> Unit = { _, _ -> },
-    thredditUser: ThredditUser,
+    thredditUserFlow: StateFlow<ThredditUser>,
 ) {
+    val thredditUser by thredditUserFlow.collectAsState()
+
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.background
@@ -70,16 +76,24 @@ fun AddPostScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                AsyncImage(
-                    model = thredditUser.profilePicUrl ?: placeholderImage,
-                    contentDescription = "Profile Pic",
-                    contentScale = ContentScale.Crop,
+                Box(
                     modifier = Modifier
-                        .padding(vertical = 15.dp)
-                        .size(55.dp)
-                        .aspectRatio(1f)
+                        .size(65.dp)
                         .clip(CircleShape)
-                )
+                        .border(2.dp, MaterialTheme.colorScheme.onBackground, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = thredditUser.profilePicUrl ?: placeholderImage,
+                        contentDescription = "Profile Pic",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .padding(vertical = 15.dp)
+                            .size(55.dp)
+                            .aspectRatio(1f)
+                            .clip(CircleShape)
+                    )
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -172,15 +186,15 @@ fun AddPostScreen(
 }
 
 
-@Preview(
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun AddPostPreview() {
-    ThredditTheme {
-        AddPostScreen(
-            state = AddPostState(),
-            thredditUser = ThredditUser()
-        )
-    }
-}
+//@Preview(
+//    uiMode = Configuration.UI_MODE_NIGHT_YES
+//)
+//@Composable
+//private fun AddPostPreview() {
+//    ThredditTheme {
+//        AddPostScreen(
+//            state = AddPostState(),
+//            thredditUserFlow = StateFlow<ThredditUser>
+//        )
+//    }
+//}

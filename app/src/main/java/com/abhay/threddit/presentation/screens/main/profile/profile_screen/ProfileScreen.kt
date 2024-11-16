@@ -1,12 +1,12 @@
 package com.abhay.threddit.presentation.screens.main.profile.profile_screen
 
 import android.annotation.SuppressLint
-import android.content.res.Configuration
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,8 +36,10 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,30 +48,30 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.abhay.threddit.R
 import com.abhay.threddit.domain.ThredditUser
 import com.abhay.threddit.presentation.screens.main.add_post.Comments
 import com.abhay.threddit.presentation.screens.main.add_post.Posts
-import com.abhay.threddit.ui.theme.ThredditTheme
+import kotlinx.coroutines.flow.StateFlow
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    userProfile: ThredditUser? = ThredditUser(),
-    profileState: ProfileState = ProfileState(),
+    thredditUserFlow: StateFlow<ThredditUser>,
+    profileStateFlow: StateFlow<ProfileState>,
     uploadProfileImage: (Uri) -> Unit = {},
-    loadProfile: () -> Unit = {}
 ) {
 
-    LaunchedEffect(Unit) {
-        loadProfile()
-    }
+
+    val thredditUser by thredditUserFlow.collectAsState()
+    val profileState by profileStateFlow.collectAsState()
 
     Surface(
         color = MaterialTheme.colorScheme.background
@@ -77,16 +79,16 @@ fun ProfileScreen(
         Box(
             modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
-            if (userProfile == null) {
-                CircularProgressIndicator(
-                    strokeWidth = 2.dp,
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp)
-                        .size(25.dp),
-                    color = MaterialTheme.colorScheme.onSecondary
-                )
-            }
-            userProfile?.let { user ->
+//            if (thredditUser.username == "") {
+//                CircularProgressIndicator(
+//                    strokeWidth = 2.dp,
+//                    modifier = Modifier
+//                        .padding(horizontal = 10.dp)
+//                        .size(25.dp),
+//                    color = MaterialTheme.colorScheme.onSecondary
+//                )
+//            }
+            thredditUser.let { user ->
                 Column(
                     modifier = modifier
                         .fillMaxSize()
@@ -110,7 +112,7 @@ fun ProfileScreen(
                             .fillMaxWidth()
                             .wrapContentHeight()
                             .padding(vertical = 12.dp),
-        //                            viewModel = viewModel
+                            //                            viewModel = viewModel
                             uploadProfileImage = { uploadProfileImage(it) })
 
                     }
@@ -248,10 +250,11 @@ fun PostsAndComments(
                 .fillMaxWidth()
                 .weight(1f), state = pagerState
         ) { index ->
-            when(tabs[index]) {
+            when (tabs[index]) {
                 "Posts" -> {
                     Posts(postList = profileState.posts)
                 }
+
                 "Comments" -> {
                     Comments()
                 }
@@ -274,7 +277,7 @@ fun UserInfo(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
@@ -316,28 +319,67 @@ fun UserInfo(
             val placeholderImage =
                 if (isSystemInDarkTheme()) R.drawable.default_pfp_light else R.drawable.default_pfp_dark
 
-            AsyncImage(
-                model = profilePicUrl ?: placeholderImage,
-                contentDescription = "Profile Pic",
-                contentScale = ContentScale.Crop,
+            var isImageLoaded by remember {
+                mutableStateOf(false)
+            }
+
+            val asyncImageRequest = ImageRequest.Builder(LocalContext.current)
+                .data(profilePicUrl)
+                .placeholder(placeholderImage)
+                .crossfade(true)
+                .listener(
+                    onStart = { _ ->
+                        isImageLoaded = false
+                    },
+                    onSuccess = { _, _ ->
+                        isImageLoaded = true
+                    },
+                    onError = { _, _ ->
+                        isImageLoaded = true
+                    }
+                )
+                .build()
+
+            Box(
                 modifier = Modifier
-                    .padding(vertical = 15.dp)
-                    .size(80.dp)
-                    .aspectRatio(1f)
+                    .size(90.dp)
                     .clip(CircleShape)
-            )
+                    .border(2.dp, MaterialTheme.colorScheme.onBackground, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                if (!isImageLoaded) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+//                        modifier = Modifier
+//                            .padding(horizontal = 10.dp)
+//                            .size(25.dp),
+                        color = MaterialTheme.colorScheme.onSecondary
+                    )
+                }
+                AsyncImage(
+                    model = asyncImageRequest,
+                    contentDescription = "Profile Pic",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .padding(vertical = 15.dp)
+                        .size(80.dp)
+                        .aspectRatio(1f)
+                        .clip(CircleShape)
+
+                )
+            }
 
         }
 
     }
 }
 
-@Preview(
-    showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun ProfilePreview() {
-    ThredditTheme {
-        ProfileScreen(uploadProfileImage = {})
-    }
-}
+//@Preview(
+//    showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES
+//)
+//@Composable
+//private fun ProfilePreview() {
+//    ThredditTheme {
+//        ProfileScreen(uploadProfileImage = {})
+//    }
+//}

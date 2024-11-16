@@ -45,7 +45,7 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
                 openAndPopUp = { route, popUp ->
                     navController.navigateAndPopUp(route, popUp)
                 },
-                thredditUser = sharedViewModel.thredditUser.collectAsState().value
+                thredditUserFlow = sharedViewModel.thredditUser
             )
         }
 
@@ -55,12 +55,13 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
 
         composable<Graphs.MainNavGraph.Profile.ProfileScreen> { navBackStackEntry ->
             val viewModel = hiltViewModel<ProfileViewModel>()
+            val sharedViewModel = navBackStackEntry.sharedViewModel<SharedViewModel>(navController = navController)
 
             ProfileScreen(
-                userProfile = viewModel.userProfile.collectAsState().value,
-                profileState = viewModel.profileState.value,
+                thredditUserFlow = sharedViewModel.thredditUser,
+                profileStateFlow = viewModel.profileState,
                 uploadProfileImage = { viewModel.uploadProfileImage(it) },
-                loadProfile = {viewModel.loadProfile()}
+//                loadProfile = {viewModel.loadProfile()}
             )
         }
 
